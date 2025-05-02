@@ -38,7 +38,7 @@
 
 <script>
     // Show the modal
-    document.getElementById('tambahKamarBtn').addEventListener('click', function() {
+    document.getElementById('addRoomBtn').addEventListener('click', function() {
         document.getElementById('tambahKamarModal').classList.remove('hidden');
     });
 
@@ -49,6 +49,9 @@
     document.getElementById('closeEditModalBtn').addEventListener('click', function() {
         document.getElementById('editKamarModal').classList.add('hidden');
     });
+
+    
+
     // Handle form submission
     document.getElementById('tambahKamarForm').addEventListener('submit', function(event) {
         event.preventDefault(); // Prevent the default form submission

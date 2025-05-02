@@ -70,135 +70,60 @@
         </div>
 
         <!-- Room List -->
-        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-            <!-- Room 1 -->
-            <div class="col">
-                <div class="card room-card h-100">
-                    <div class="position-relative">
-                        <img src="https://images.unsplash.com/photo-1564013799919-ab600027ffc6?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80"
-                            class="card-img-top room-img" alt="Kamar 101">
-                        <span class="position-absolute top-0 end-0 badge badge-available m-2">
-                            Tersedia
-                        </span>
-                    </div>
-                    <div class="card-body d-flex flex-column">
-                        <div class="d-flex justify-content-between align-items-start mb-3">
-                            <h5 class="card-title mb-0">Kamar 101</h5>
-                            <h5 class="text-success mb-0">Rp 1.200.000</h5>
+        <div class="row">
+            @foreach ($rooms as $kamar)
+                <div class="col-md-4 mb-4">
+                    <div class="card room-card h-100">
+                        <div class="position-relative">
+                            @if ($kamar->gambar)
+                                <img src="{{ asset('storage/' . $kamar->gambar) }}" class="card-img-top room-img"
+                                    alt="Kamar {{ $kamar->no_kamar }}">
+                            @else
+                                <img src="https://images.unsplash.com/photo-1564013799919-ab600027ffc6?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80"
+                                    class="card-img-top room-img" alt="Kamar {{ $kamar->no_kamar }}">
+                            @endif
+                            <span
+                                class="position-absolute top-0 end-0 mt-3 mr-2s badge
+                                {{ $kamar->status == 'available' ? 'bg-success' : 'bg-danger' }}
+                                text-white px-3 py-1 rounded-pill">
+                                {{ $kamar->status == 'available' ? 'Tersedia' : 'Booked' }}
+                            </span>
                         </div>
-
-                        <div class="mb-3">
-                            <div class="d-flex align-items-center text-muted mb-2">
-                                <i class="fas fa-home me-2"></i>
-                                <span>Kosan Putri</span>
+                        <div class="card-body d-flex flex-column">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <h5 class="card-title mb-0">Kamar {{ $kamar->no_kamar }}</h5>
+                                <h5 class="text-success mb-0">Rp {{ number_format($kamar->harga, 0, ',', '.') }}</h5>
                             </div>
 
-                            <div class="d-flex flex-wrap">
-                                <span class="badge bg-primary-light text-primary facility-badge">
-                                    <i class="fas fa-snowflake me-1"></i> AC
-                                </span>
-                                <span class="badge bg-primary-light text-primary facility-badge">
-                                    <i class="fas fa-bath me-1"></i> Kamar Mandi Dalam
-                                </span>
-                                <span class="badge bg-primary-light text-primary facility-badge">
-                                    <i class="fas fa-wifi me-1"></i> WiFi
-                                </span>
-                                <span class="badge bg-primary-light text-primary facility-badge">
-                                    <i class="fas fa-utensils me-1"></i> Dapur Bersama
-                                </span>
-                            </div>
-                        </div>
+                            <div class="mb-3">
+                                <div class="d-flex align-items-center text-muted mb-2">
+                                    <i class="fas fa-home me-2"></i>
+                                    <span>Kosan Putri</span>
+                                </div>
 
-                        <a href="/kosan/1" class="btn btn-success mt-auto">
-                            <i class="fas fa-eye me-2"></i>Lihat Detail
-                        </a>
-                    </div>
-                </div>
-            </div>
+                                <div class="d-flex flex-wrap">
+                                    @foreach (explode(',', $kamar->fasilitas) as $fasilitas)
+                                        <span class="badge bg-primary-light text-primary facility-badge me-1 mb-1">
+                                            <i class="fas fa-check me-1"></i>{{ trim($fasilitas) }}
 
-            <!-- Room 2 -->
-            <div class="col">
-                <div class="card room-card h-100">
-                    <div class="position-relative">
-                        <img src="https://images.unsplash.com/photo-1580587771525-78b9dba3b914?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80"
-                            class="card-img-top room-img" alt="Kamar 202">
-                        <span class="position-absolute top-0 end-0 badge badge-occupied m-2">
-                            Terisi
-                        </span>
-                    </div>
-                    <div class="card-body d-flex flex-column">
-                        <div class="d-flex justify-content-between align-items-start mb-3">
-                            <h5 class="card-title mb-0">Kamar 202</h5>
-                            <h5 class="text-success mb-0">Rp 1.500.000</h5>
-                        </div>
-
-                        <div class="mb-3">
-                            <div class="d-flex align-items-center text-muted mb-2">
-                                <i class="fas fa-home me-2"></i>
-                                <span>Kosan Putri</span>
+                                        </span>
+                                    @endforeach
+                                </div>
                             </div>
 
-                            <div class="d-flex flex-wrap">
-                                <span class="badge bg-primary-light text-primary facility-badge">
-                                    <i class="fas fa-snowflake me-1"></i> AC
-                                </span>
-                                <span class="badge bg-primary-light text-primary facility-badge">
-                                    <i class="fas fa-bath me-1"></i> Kamar Mandi Dalam
-                                </span>
-                                <span class="badge bg-primary-light text-primary facility-badge">
-                                    <i class="fas fa-tshirt me-1"></i> Laundry
-                                </span>
-                            </div>
-                        </div>
+                            <a href="{{ $kamar->status == 'booked' ? '#' : '/kosan/' . $kamar->id }}"
+                                class="btn mt-auto
+                                {{ $kamar->status == 'available' ? 'btn-success' : 'btn-secondary' }}
+                                {{ $kamar->status == 'booked' ? 'cursor-not-allowed opacity-50' : '' }}"
+                                id="kamar-{{ $kamar->id }}"
+                                {{ $kamar->status == 'booked' ? 'onclick="event.preventDefault();"' : '' }}>
+                                <i class="fas fa-eye me-2"></i>Lihat Detail
+                            </a>
 
-                        <a href="/kosan/2" class="btn btn-outline-secondary mt-auto disabled">
-                            Kamar Terisi
-                        </a>
+                        </div>
                     </div>
                 </div>
-            </div>
-
-            <!-- Room 3 -->
-            <div class="col">
-                <div class="card room-card h-100">
-                    <div class="position-relative">
-                        <img src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80"
-                            class="card-img-top room-img" alt="Kamar 305">
-                        <span class="position-absolute top-0 end-0 badge badge-available m-2">
-                            Tersedia
-                        </span>
-                    </div>
-                    <div class="card-body d-flex flex-column">
-                        <div class="d-flex justify-content-between align-items-start mb-3">
-                            <h5 class="card-title mb-0">Kamar 305</h5>
-                            <h5 class="text-success mb-0">Rp 900.000</h5>
-                        </div>
-
-                        <div class="mb-3">
-                            <div class="d-flex align-items-center text-muted mb-2">
-                                <i class="fas fa-home me-2"></i>
-                                <span>Kosan Putra</span>
-                            </div>
-
-                            <div class="d-flex flex-wrap">
-                                <span class="badge bg-primary-light text-primary facility-badge">
-                                    <i class="fas fa-fan me-1"></i> Kipas Angin
-                                </span>
-                                <span class="badge bg-primary-light text-primary facility-badge">
-                                    <i class="fas fa-shower me-1"></i> Kamar Mandi Luar
-                                </span>
-                                <span class="badge bg-primary-light text-primary facility-badge">
-                                    <i class="fas fa-parking me-1"></i> Parkir Luas
-                                </span>
-                            </div>
-                        </div>
-
-                        <a href="/kosan/3" class="btn btn-success mt-auto">
-                            <i class="fas fa-eye me-2"></i>Lihat Detail
-                        </a>
-                    </div>
-                </div>
-            </div>
+            @endforeach
         </div>
         <!-- Pagination -->
         <nav aria-label="Page navigation example" class="mt-5">
@@ -216,7 +141,7 @@
         </nav>
         <!-- Back Button -->
         <div class="text-center mt-4">
-            <a href="{{ route('home') }}" class="btn btn-secondary">
+            <a href="{{ route('user.home') }}" class="btn btn-secondary">
                 <i class="fas fa-arrow-left me-2"></i>Kembali
             </a>
         </div>
@@ -225,6 +150,20 @@
 
     <!-- Bootstrap JS Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Check if the status is booked and disable the link
+        document.addEventListener("DOMContentLoaded", function() {
+            const kamarButton = document.querySelectorAll('a[id^="kamar-"]');
+            kamarButton.forEach(button => {
+                if (button.classList.contains('cursor-not-allowed')) {
+                    button.addEventListener('click', function(event) {
+                        event.preventDefault(); // Prevent the default click action
+                        return false;
+                    });
+                }
+            });
+        });
+    </script>
 </body>
 
 </html>

@@ -10,5 +10,5 @@ class KelolaKamar extends Model
     use HasFactory;
 
     protected $table = 'kelola_kamar';
-    protected $fillable = ['no_kamar', 'harga', 'deskripsi_kamar', 'fasilitas', 'gambar'];
+    protected $fillable = ['no_kamar', 'harga', 'deskripsi_kamar', 'fasilitas', 'gambar', 'status'];
 }

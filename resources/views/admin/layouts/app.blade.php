@@ -9,12 +9,18 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
         integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg=="
         crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 </head>
 
 <body class="bg-white">
     <div class="flex">
         <!-- Sidebar -->
-        <div class="w-1/5 bg-white h-screen p-5 shadow-md">
+        <div class="w-1/5 bg-white h-screen p-5 shadow-md fixed ">
             <h2 class="font-bold text-xl mb-5">🏠 Kost Putri Alifa Purwokerto</h2>
             <ul>
                 <li class="mb-2">
@@ -30,7 +36,7 @@
                 <li class="mb-2">
                     <a href="{{ route('penghuni') }}"
                         class="block p-2 rounded-full hover:bg-gray-100 hover:text-black {{ request()->routeIs('penghuni') ? 'bg-pink-500 text-white' : '' }}">👥
-                        Kelola Penghuni</a>
+                        Kelola Pengguna</a>
                 </li>
                 <li class="mb-2">
                     <a href="{{ route('pemesanan') }}"
@@ -53,7 +59,7 @@
         </div>
 
         <!-- Content -->
-        <div class="w-4/5 p-10">
+        <div class="flex-1 ml-[20%] p-10">
             <div class="flex justify-between items-center mb-5">
                 <h1 class="text-3xl font-bold mb-8 text-start">@yield('title')</h1>
                 <!-- Icon Notifikasi -->

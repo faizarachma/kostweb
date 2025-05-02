@@ -7,10 +7,9 @@ use App\Http\Controllers\AdminAuthController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\AdminController;
 
-// User routes
-Route::get('/', function () {
-    return view('user.home');
-})->name('home');
+;
+
+Route::get('/', [AuthController::class, 'index'])->name('user.home');
 
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('auth.user.login');
 Route::post('/login', [AuthController::class, 'login']);
@@ -19,6 +18,8 @@ Route::post('/register', [AuthController::class, 'register']);
 Route::post('/logout', [AuthController::class, 'logout'])->name('user.logout');
 
 Route::get('/listroom', [AuthController::class, 'listRoom'])->name('user.listroom');
+Route::get('/room/{id}', [AuthController::class, 'detailRoom'])->name('user.detailroom');
+Route::get('/booking', [AuthController::class, 'bookingroom']) -> name('user.booking');
 
 
 // Payment route
@@ -26,7 +27,7 @@ Route::get('/payment', [PaymentController::class, 'createTransaction']);
 
 // Admin routes
 Route::get('/admin/login', [AdminAuthController::class, 'showLoginForm'])->name('admin.login');
-Route::post('/admin/login', [AdminAuthController::class, 'login']);
+Route::post('/admin/login', [AdminAuthController::class, 'login'])->name('login.admin');
 Route::get('/admin/logout', [AdminAuthController::class, 'logout'])->name('admin.logout');
 
 Route::get('/admin/dashboard', function () {
@@ -36,9 +37,10 @@ Route::get('/admin/dashboard', function () {
 // Room management
 Route::get('/admin/kamar', [AdminController::class, 'indexKamar'])->name('kamar');
 Route::post('/admin/kamar/store', [AdminController::class, 'storeKamar'])->name('kamar.store');
-Route::get('/admin/kamar/edit/{id}', [AdminController::class, 'editKamar'])->name('kamar.edit');
-Route::put('/admin/kamar/update/{id}', [AdminController::class, 'updateKamar'])->name('kamar.update');
+Route::get('/admin/kamar/update/{id}', [AdminController::class, 'editKamar'])->name('kamar.update');
+Route::put('/admin/kamar/update/{id}', [AdminController::class, 'updateKamar'])->name('kamar.update.post');
 Route::delete('/admin/kamar/destroy/{id}', [AdminController::class, 'destroyKamar'])->name('kamar.destroy');
+
 
 // Notification management
 Route::get('/admin/notifikasi', [AdminController::class, 'indexNotifikasi'])->name('notifikasi');

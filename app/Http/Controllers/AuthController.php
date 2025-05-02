@@ -10,6 +10,11 @@ use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
+    public function index(){
+        $rooms = KelolaKamar::where('status', 'available')->take(3)->get();
+        return view('user.home', compact('rooms'));
+
+    }
     public function showLoginForm()
     {
         return view('auth.user.login');
@@ -40,6 +45,8 @@ class AuthController extends Controller
             'email' => 'Email atau password salah.',
         ]);
     }
+
+
 
     public function showRegisterForm()
     {
@@ -79,8 +86,22 @@ class AuthController extends Controller
         $rooms = KelolaKamar::all(); // Assuming you have a Room model
 
         return view('user.listroom', compact('rooms'));
+
     }
 
+    public function detailRoom($id)
+    {
+        // Fetch the room details by ID
+        $room = KelolaKamar::findOrFail($id); // Assuming you have a Room model
+
+        return view('user.detailroom', compact('room'));
+    }
+
+    public function bookingroom(){
+
+
+        return view('user.booking');
+    }
 
     public function logout()
     {

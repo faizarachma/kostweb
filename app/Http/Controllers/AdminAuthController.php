@@ -12,21 +12,38 @@ class AdminAuthController extends Controller
         return view('auth.admin.login');
     }
 
+
+
     public function login(Request $request)
     {
+
         $request->validate([
-            'email' => 'required|email',
+            'username' => 'required',
             'password' => 'required|min:6',
         ]);
 
-        if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
-            return redirect()->route('admin.dashboard')->with('success', 'Login berhasil.');
+        if (Auth::attempt(['username' => $request->username, 'password' => $request->password])) {
+            $user = Auth::user();
+
+            // Check if the user is an admin
+            if ($user->role !== 'admin') {
+            Auth::logout();
+            return back()->withErrors([
+                'username' => 'Akun ini tidak memiliki akses admin.',
+            ]);
+            }
+
+            return redirect()->route('dashboard')->with('success', 'Login berhasil.');
         }
 
         return back()->withErrors([
-            'email' => 'Email atau password salah.',
+            'username' => 'Username atau password salah.',
         ]);
+
     }
+
+
+
     public function logout()
     {
         Auth::logout();

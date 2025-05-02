@@ -14,8 +14,8 @@
     <div class="bg-white p-4 rounded-lg shadow-md mt-10">
         <div class="overflow-x-auto">
             <table class="w-full bg-white rounded-lg shadow-md border-collapse">
-                <thead>
-                    <tr class="bg-gray-200 text-gray-700 text-left border-b">
+                <thead class="sticky top-0 bg-gray-200 text-gray-700 text-left border-b">
+                    <tr>
                         <th class="p-4 border-r">No</th>
                         <th class="p-4 border-r">Tanggal</th>
                         <th class="p-4 border-r">No Kamar</th>
@@ -23,7 +23,9 @@
                         <th class="p-4 border-r">Deskripsi</th>
                         <th class="p-4 border-r">Fasilitas</th>
                         <th class="p-4 border-r">Gambar</th>
+                        <th class="p-4 border-r">Status</th>
                         <th class="p-4">Aksi</th>
+
                     </tr>
                 </thead>
                 <tbody>
@@ -36,10 +38,22 @@
                             <td class="p-4">{{ $item->deskripsi_kamar }}</td>
                             <td class="p-4">{{ $item->fasilitas }}</td>
                             <td class="p-4">
-                                <img src="{{ asset('storage/products' . $item->gambar) }}" alt="Gambar Kamar"
-                                    class="w-20 h-20 object-cover rounded">
+                                @if ($item->gambar)
+                                    <img src="{{ asset('storage/' . $item->gambar) }}" alt="Gambar Kamar"
+                                        class="w-20 h-20 object-cover rounded-lg">
+                                @else
+                                    <span class="text-gray-500">Tidak ada gambar</span>
+                                @endif
                             </td>
-
+                            <td class="p-4">
+                                <!-- Apply conditional classes based on the status -->
+                                <span
+                                    class="px-3 py-2 rounded-full
+                                        {{ $item->status == 'available' ? 'bg-green-500 text-white' : '' }}
+                                        {{ $item->status == 'booked' ? 'bg-yellow-500 text-white' : '' }}">
+                                    {{ $item->status }}
+                                </span>
+                            </td>
 
                             <td class="p-4 space-y-2">
                                 {{-- Modal Edit Kamar --}}
@@ -53,7 +67,17 @@
                 </tbody>
             </table>
         </div>
+        {{-- Pagination --}}
+        <div class="mt-4">
+            {{ $kamar->links('vendor.pagination.tailwind') }}
+        </div>
     </div>
+    <style>
+        .overflow-x-auto {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+    </style>
 
     {{-- Pagination --}}
     {{-- <div class="mt-4">
@@ -62,121 +86,4 @@
 @endsection
 
 
-<script>
-    // Show the modal
-    document.getElementById('addRoomBtn').addEventListener('click', function() {
-        document.getElementById('tambahKamarModal').classList.remove('hidden');
-    });
-
-
-    // Close the modal
-    document.getElementById('closeModalBtn').addEventListener('click', function() {
-        document.getElementById('tambahKamarModal').classList.add('hidden');
-    });
-
-    // Handle form submission
-    document.getElementById('tambahKamarForm').addEventListener('submit', function(event) {
-        event.preventDefault(); // Prevent the default form submission
-
-        // Perform your AJAX request here
-        const formData = new FormData(this);
-        fetch(this.action, {
-                method: 'POST',
-                body: formData,
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert('Kamar berhasil ditambahkan!');
-                    location.reload();
-                } else {
-                    alert('Terjadi kesalahan saat menambahkan kamar.');
-                }
-            })
-            .catch(error => console.error('Error:', error));
-    });
-    // Show the edit modal
-    function openEditModal(id) {
-        document.getElementById('editKamarModal-' + id).classList.remove('hidden');
-    }
-    // Close the edit modal
-    function closeEditModal(id) {
-        document.getElementById('editKamarModal-' + id).classList.add('hidden');
-    }
-    // Show the delete modal
-    function openDeleteModal(id) {
-        document.getElementById('deleteModal-' + id).classList.remove('hidden');
-    }
-
-    // Close the delete modal
-    function closeDeleteModal(id) {
-        document.getElementById('deleteModal-' + id).classList.add('hidden');
-    }
-    // Handle form submission for delete
-    document.querySelectorAll('.deleteForm').forEach(form => {
-        form.addEventListener('submit', function(event) {
-            event.preventDefault(); // Prevent the default form submission
-
-            // Perform your AJAX request here
-            const formData = new FormData(this);
-            fetch(this.action, {
-                    method: 'POST',
-                    body: formData,
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        alert('Kamar berhasil dihapus!');
-                        location.reload();
-                    } else {
-                        alert('Terjadi kesalahan saat menghapus kamar.');
-                    }
-                })
-                .catch(error => console.error('Error:', error));
-        });
-    });
-    // Handle form submission for edit
-    document.querySelectorAll('.editForm').forEach(form => {
-        form.addEventListener('submit', function(event) {
-            event.preventDefault(); // Prevent the default form submission
-
-            // Perform your AJAX request here
-            const formData = new FormData(this);
-            fetch(this.action, {
-                    method: 'POST',
-                    body: formData,
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        alert('Kamar berhasil diupdate!');
-                        location.reload();
-                    } else {
-                        alert('Terjadi kesalahan saat mengupdate kamar.');
-                    }
-                })
-                .catch(error => console.error('Error:', error));
-        });
-    });
-    // Close the edit modal when clicking outside of it
-    document.addEventListener('click', function(event) {
-        if (event.target.matches('.modal-overlay')) {
-            const id = event.target.getAttribute('data-id');
-            closeEditModal(id);
-        }
-    });
-    // Close the delete modal when clicking outside of it
-    document.addEventListener('click', function(event) {
-        if (event.target.matches('.modal-overlay')) {
-            const id = event.target.getAttribute('data-id');
-            closeDeleteModal(id);
-        }
-    });
-    // Close the edit modal when clicking outside of it
-    document.addEventListener('click', function(event) {
-        if (event.target.matches('.modal-overlay')) {
-            const id = event.target.getAttribute('data-id');
-            closeEditModal(id);
-        }
-    });
-</script>
+<script></script>

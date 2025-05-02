@@ -18,6 +18,7 @@ return new class extends Migration
             $table->text('deskripsi_kamar');
             $table->text('fasilitas');
             $table->string('gambar')->nullable();
+            $table->enum('status', ['available', 'booked']);
             $table->timestamps();
         });
     }
