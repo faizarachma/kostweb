@@ -19,8 +19,54 @@
                 <textarea name="deskripsi_kamar" id="deskripsi_kamar" required class="w-full border rounded px-3 py-2"></textarea>
             </div>
             <div>
-                <label for="fasilitas" class="block text-sm font-medium text-gray-700">Fasilitas</label>
-                <input type="text" name="fasilitas" id="fasilitas" required class="w-full border rounded px-3 py-2">
+                <label class="block text-sm font-medium text-gray-700">Fasilitas</label>
+                <div class="mt-2 space-y-2">
+                    <div class="flex items-center">
+                        <input type="checkbox" id="fasilitas1" name="fasilitas[]" value="AC"
+                            class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                        <label for="fasilitas1" class="ml-2 block text-sm text-gray-900">AC</label>
+                    </div>
+                    <div class="flex items-center">
+                        <input type="checkbox" id="fasilitas2" name="fasilitas[]" value="WiFi"
+                            class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                        <label for="fasilitas2" class="ml-2 block text-sm text-gray-900">WiFi</label>
+                    </div>
+                    <div class="flex items-center">
+                        <input type="checkbox" id="fasilitas3" name="fasilitas[]" value="TV"
+                            class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                        <label for="fasilitas3" class="ml-2 block text-sm text-gray-900">TV</label>
+                    </div>
+                    <div class="flex items-center">
+                        <input type="checkbox" id="fasilitas4" name="fasilitas[]" value="Kulkas"
+                            class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                        <label for="fasilitas4" class="ml-2 block text-sm text-gray-900">Kulkas</label>
+                    </div>
+                    <div class="flex items-center">
+                        <input type="checkbox" id="fasilitas5" name="fasilitas[]" value="kipas"
+                            class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                        <label for="fasilitas5" class="ml-2 block text-sm text-gray-900">Kipas Angin</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabel untuk menampilkan fasilitas yang dipilih -->
+            <div class="mt-8">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Fasilitas yang Dipilih</h3>
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col"
+                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                No</th>
+                            <th scope="col"
+                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Nama Fasilitas</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabelFasilitas" class="bg-white divide-y divide-gray-200">
+                        <!-- Data akan ditampilkan di sini setelah dipilih -->
+                    </tbody>
+                </table>
             </div>
             <div>
                 <label for="gambar" class="block text-sm font-medium text-gray-700">Gambar</label>
@@ -50,7 +96,40 @@
         document.getElementById('editKamarModal').classList.add('hidden');
     });
 
-    
+
+    document.querySelectorAll('input[name="fasilitas[]"]').forEach(checkbox => {
+        checkbox.addEventListener('change', updateTabelFasilitas);
+    });
+
+    function updateTabelFasilitas() {
+        const tabelBody = document.getElementById('tabelFasilitas');
+        tabelBody.innerHTML = ''; // Kosongkan tabel
+
+        // Ambil semua checkbox yang dicentang
+        const checkedBoxes = document.querySelectorAll('input[name="fasilitas[]"]:checked');
+
+        if (checkedBoxes.length === 0) {
+            // Jika tidak ada yang dicentang, tampilkan pesan
+            const row = document.createElement('tr');
+            row.innerHTML =
+                '<td colspan="2" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">Belum ada fasilitas yang dipilih</td>';
+            tabelBody.appendChild(row);
+        } else {
+            // Jika ada yang dicentang, tampilkan dalam tabel
+            checkedBoxes.forEach((box, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${index + 1}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${box.value}</td>
+                `;
+                tabelBody.appendChild(row);
+            });
+        }
+    }
+
+    // Panggil fungsi pertama kali untuk inisialisasi
+    updateTabelFasilitas();
+
 
     // Handle form submission
     document.getElementById('tambahKamarForm').addEventListener('submit', function(event) {

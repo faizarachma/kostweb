@@ -34,48 +34,52 @@ class AdminController extends Controller
         return view('admin.room.main', compact('kamar'));
     }
 
-    public function storeKamar(Request $request)
-    {
 
-        $validated = $request->validate([
-            'no_kamar' => 'required|unique:kelola_kamar',
-            'harga' => 'required|numeric|min:0',
-            'deskripsi_kamar' => 'required|string|max:500',
-            'fasilitas' => 'required|string|max:255',
-            'gambar' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'status' => 'in:available,booked',
-        ]);
 
-        if (!isset($validated['status'])) {
+public function storeKamar(Request $request)
+{
+    $validated = $request->validate([
+        'no_kamar' => 'required|unique:kelola_kamar',
+        'harga' => 'required|numeric|min:0',
+        'deskripsi_kamar' => 'required|string|max:500',
+        'fasilitas' => 'required|array', // Ubah ke array untuk checkbox
+        'fasilitas.*' => 'string', // Validasi setiap item dalam array
+        'gambar' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+        'status' => 'in:available,booked',
+    ]);
+
+    if (!isset($validated['status'])) {
         $validated['status'] = 'available';
     }
 
-        try {
-            if ($request->hasFile('gambar')) {
-                $path = $request->file('gambar')->store('kamar', 'public');
-                $validated['gambar'] = $path;
-            }
-
-            KelolaKamar::create($validated);
-            return redirect()->route('kamar')->with('success', 'Kamar berhasil ditambahkan');
-        } catch (\Exception $e) {
-            return back()->withInput()->with('error', 'Gagal menambahkan kamar: '.$e->getMessage());
+    try {
+        if ($request->hasFile('gambar')) {
+            $path = $request->file('gambar')->store('kamar', 'public');
+            $validated['gambar'] = $path;
         }
 
+        // Ubah array fasilitas menjadi string (bisa juga disimpan sebagai JSON)
+        $validated['fasilitas'] = implode(', ', $validated['fasilitas']);
+
+        KelolaKamar::create($validated);
+        return redirect()->route('kamar')->with('success', 'Kamar berhasil ditambahkan');
+    } catch (\Exception $e) {
+        return back()->withInput()->with('error', 'Gagal menambahkan kamar: '.$e->getMessage());
     }
+}
 
-   public function updateKamar(Request $request, $id)
+
+public function updateKamar(Request $request, $id)
 {
-
     // Ambil data kamar yang akan diupdate
-    $kamar = KelolaKamar::findOrFail($id); // Ganti 'Kamar' dengan model yang sesuai
-
+    $kamar = KelolaKamar::findOrFail($id);
 
     $validated = $request->validate([
         'no_kamar' => 'required|unique:kelola_kamar,no_kamar,'.$id,
         'harga' => 'required|numeric|min:0',
         'deskripsi_kamar' => 'required|string|max:500',
-        'fasilitas' => 'required|string|max:255',
+        'fasilitas' => 'required|array', // Ubah ke array untuk checkbox
+        'fasilitas.*' => 'string', // Validasi setiap item dalam array
         'gambar' => 'sometimes|image|mimes:jpeg,png,jpg,gif|max:2048',
         'status' => 'in:available,booked',
     ]);
@@ -84,9 +88,7 @@ class AdminController extends Controller
         $validated['status'] = 'available';
     }
 
-
     try {
-
         if ($request->hasFile('gambar')) {
             // Hapus gambar lama jika ada
             if ($kamar->gambar) {
@@ -98,12 +100,17 @@ class AdminController extends Controller
             $validated['gambar'] = $path;
         }
 
+        // Ubah array fasilitas menjadi string (sesuai dengan format di store)
+        $validated['fasilitas'] = implode(', ', $validated['fasilitas']);
+
         $kamar->update($validated);
         return redirect()->route('kamar')->with('success', 'Kamar berhasil diperbarui');
     } catch (\Exception $e) {
         return back()->withInput()->with('error', 'Gagal memperbarui kamar: '.$e->getMessage());
     }
 }
+
+
 
     public function editKamar($id)
     {
