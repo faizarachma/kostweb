@@ -52,4 +52,6 @@
 @endsection
 
 
-<script></script>
+<script>
+    
+</script>

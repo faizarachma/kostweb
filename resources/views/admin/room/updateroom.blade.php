@@ -1,6 +1,6 @@
 <!-- Button Edit Kamar -->
 <button type="button" class="bg-yellow-500 text-white p-2 rounded-full hover:bg-yellow-600"
-    onclick="openEditModal({{ $item->id }}, '{{ $item->no_kamar }}', '{{ $item->harga }}', '{{ $item->deskripsi_kamar }}', '{{ $item->fasilitas }}', '{{ $item->gambar ? asset('storage/' . $item->gambar) : '' }}')">
+    onclick="openEditModal({{ $item->id }}, '{{ $item->no_kamar }}', '{{ $item->harga }}', '{{ $item->deskripsi_kamar }}', '{{ $item->fasilitas }}','{{ $item->status }}', '{{ $item->gambar ? asset('storage/' . $item->gambar) : '' }}')">
     <svg viewBox="0 0 24 24" fill="none" class="w-5 h-5" xmlns="http://www.w3.org/2000/svg">
         <path
             d="M3.25 22C3.25 21.5858 3.58579 21.25 4 21.25H20C20.4142 21.25 20.75 21.5858 20.75 22C20.75 22.4142 20.4142 22.75 20 22.75H4C3.58579 22.75 3.25 22.4142 3.25 22Z"
@@ -18,58 +18,88 @@
 <div id="editKamarModal" class="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-50 hidden">
     <div class="bg-white p-6 rounded-lg shadow-md w-full max-w-md">
         <h2 class="text-xl font-semibold mb-4">Edit Kamar</h2>
+
         <form id="editKamarForm" method="POST" action="{{ route('kamar.update.post', $item->id) }}"
             enctype="multipart/form-data" class="space-y-4">
             @csrf
             @method('PUT')
             <input type="hidden" name="id" id="edit_id">
 
+            <!-- No Kamar -->
             <div>
                 <label for="edit_no_kamar" class="block text-sm font-medium text-gray-700">No Kamar</label>
                 <input type="text" name="no_kamar" id="edit_no_kamar" required
                     class="w-full border rounded px-3 py-2">
             </div>
 
+            <!-- Harga -->
             <div>
                 <label for="edit_harga" class="block text-sm font-medium text-gray-700">Harga</label>
                 <input type="text" name="harga" id="edit_harga" required class="w-full border rounded px-3 py-2">
             </div>
 
+            <!-- Deskripsi -->
             <div>
                 <label for="edit_deskripsi_kamar" class="block text-sm font-medium text-gray-700">Deskripsi</label>
                 <textarea name="deskripsi_kamar" id="edit_deskripsi_kamar" required class="w-full border rounded px-3 py-2"></textarea>
             </div>
 
-            <div>
-                <label for="edit_fasilitas" class="block text-sm font-medium text-gray-700">Fasilitas</label>
-                <input type="text" name="fasilitas" id="edit_fasilitas" required
-                    class="w-full border rounded px-3 py-2">
-            </div>
+            <!-- Fasilitas -->
+            @php
+                $selectedFasilitas = old('fasilitas', explode(', ', $item->fasilitas));
+            @endphp
 
             <div>
-                <label for="edit_fasilitas" class="block text-sm font-medium text-gray-700">Ubah Status</label>
-                <select name="status" id="edit_fasilitas" required class="w-full border rounded px-3 py-2">
-                    <option value="available" {{ old('status') == 'available' ? 'selected' : '' }}>Available</option>
-                    <option value="booked" {{ old('status') == 'booked' ? 'selected' : '' }}>Booked</option>
+                <label class="block text-sm font-medium text-gray-700">Fasilitas</label>
+                <div class="mt-2 flex flex-wrap gap-4">
+                    @foreach (['AC', 'WiFi', 'TV', 'Kulkas', 'kipas'] as $index => $fasilitas)
+                        <div class="flex items-center">
+                            <input type="checkbox" id="fasilitas{{ $index + 1 }}" name="fasilitas[]"
+                                value="{{ $fasilitas }}"
+                                class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                                {{ in_array($fasilitas, $selectedFasilitas) ? 'checked' : '' }}>
+                            <label for="fasilitas{{ $index + 1 }}" class="ml-2 block text-sm text-gray-900">
+                                {{ $fasilitas === 'kipas' ? 'Kipas Angin' : $fasilitas }}
+                            </label>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+
+
+            <!-- Status -->
+            <div>
+                <label for="edit_status" class="block text-sm font-medium text-gray-700">Ubah Status</label>
+                <select name="status" id="edit_status" required class="w-full border rounded px-3 py-2">
+                    <option value="available"
+                        {{ old('status', $item->status ?? '') == 'available' ? 'selected' : '' }}>
+                        Available</option>
+                    <option value="booked" {{ old('status', $item->status ?? '') == 'booked' ? 'selected' : '' }}>
+                        Booked</option>
                 </select>
             </div>
 
+            <!-- Gambar -->
             <div>
                 <label for="edit_gambar" class="block text-sm font-medium text-gray-700">Gambar</label>
                 <input type="file" name="gambar" id="edit_gambar" class="w-full border rounded px-3 py-2"
                     onchange="previewEditImage(event)">
 
-                <div class="mt-2">
-                    <img id="current_image" src="" alt="Gambar Saat Ini" class="w-32 h-32 object-cover rounded">
+                <div class="mt-2 space-y-2">
+                    <img id="current_image" src="" alt="Gambar Saat Ini"
+                        class="w-32 h-32 object-cover rounded border border-gray-300">
                     <img id="preview_gambar" src="#" alt="Preview Gambar Baru"
-                        class="w-32 h-32 object-cover rounded hidden mt-2">
+                        class="w-32 h-32 object-cover rounded hidden mt-2 border border-blue-300">
                     <div id="no_image" class="text-gray-500 text-sm hidden">Tidak ada gambar</div>
                 </div>
             </div>
 
+            <!-- Tombol -->
             <div class="flex justify-end space-x-2">
                 <button type="button" onclick="closeEditModal()"
-                    class="bg-gray-300 text-gray-700 px-4 py-2 rounded-full hover:bg-gray-400">Batal</button>
+                    class="bg-gray-300 text-gray-700 px-4 py-2 rounded-full hover:bg-gray-400">
+                    Batal
+                </button>
                 <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-full hover:bg-blue-600">
                     Simpan Perubahan
                 </button>
@@ -78,27 +108,44 @@
     </div>
 </div>
 
+
 <script>
     let currentEditId = null;
 
-    function openEditModal(id, no_kamar, harga, deskripsi_kamar, fasilitas, gambarUrl) {
+    function openEditModal(id, no_kamar, harga, deskripsi_kamar, fasilitas = [], status, gambarUrl) {
         currentEditId = id;
 
-        // Set nilai form
+        // Set nilai input teks
         document.getElementById('edit_id').value = id;
         document.getElementById('edit_no_kamar').value = no_kamar;
         document.getElementById('edit_harga').value = harga;
         document.getElementById('edit_deskripsi_kamar').value = deskripsi_kamar;
-        document.getElementById('edit_fasilitas').value = fasilitas;
+        document.getElementById('edit_status').value = status;
 
-        // Reset preview gambar
-        document.getElementById('preview_gambar').classList.add('hidden');
-        document.getElementById('preview_gambar').src = '#';
+        // Reset semua checkbox fasilitas
+        const checkboxFasilitas = document.querySelectorAll('input[name="fasilitas[]"]');
+        checkboxFasilitas.forEach(checkbox => {
+            checkbox.checked = false;
+        });
+
+        // Tandai fasilitas yang sesuai
+        if (Array.isArray(fasilitas)) {
+            fasilitas.forEach(f => {
+                const checkbox = Array.from(checkboxFasilitas).find(cb => cb.value === f);
+                if (checkbox) {
+                    checkbox.checked = true;
+                }
+            });
+        }
+
+        // Reset file input dan preview
         document.getElementById('edit_gambar').value = '';
-
-        // Set gambar saat ini
+        const preview = document.getElementById('preview_gambar');
         const currentImage = document.getElementById('current_image');
         const noImage = document.getElementById('no_image');
+
+        preview.classList.add('hidden');
+        preview.src = '#';
 
         if (gambarUrl) {
             currentImage.src = gambarUrl;
@@ -124,21 +171,15 @@
         const file = event.target.files[0];
 
         if (file) {
-            // Sembunyikan gambar saat ini dan teks "no image"
-            currentImage.classList.add('hidden');
-            noImage.classList.add('hidden');
-
-            // Tampilkan preview baru
-            preview.classList.remove('hidden');
-
-            // Buat preview
             const reader = new FileReader();
             reader.onload = function(e) {
                 preview.src = e.target.result;
-            }
+                preview.classList.remove('hidden');
+                currentImage.classList.add('hidden');
+                noImage.classList.add('hidden');
+            };
             reader.readAsDataURL(file);
         } else {
-            // Kembalikan ke gambar asli
             preview.classList.add('hidden');
             if (currentImage.src && currentImage.src !== '#') {
                 currentImage.classList.remove('hidden');

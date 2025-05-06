@@ -6,31 +6,49 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kost Putri Adi Laksmi - Room Booking</title>
     <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary-color: #28a745;
-            --secondary-color: #28a745;
-            --accent-color: #FF6584;
-            --light-color: #F8F9FA;
+            --primary-color: #2a9d8f;
+            --secondary-color: #264653;
+            --accent-color: #e9c46a;
+            --light-color: #f8f9fa;
             --dark-color: #212529;
+            --success-color: #4caf50;
+            --danger-color: #e63946;
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f5f5f7;
+            font-family: 'Poppins', sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+            line-height: 1.6;
         }
 
         .navbar-brand {
             font-weight: 700;
-            color: #28a745;
+            color: var(--primary-color);
+            letter-spacing: 0.5px;
         }
 
         .breadcrumb {
             background-color: transparent;
-            padding: 0;
+            padding: 0.75rem 0;
+            font-size: 0.9rem;
+        }
+
+        .breadcrumb-item a {
+            color: #6c757d;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .breadcrumb-item a:hover {
+            color: var(--primary-color);
         }
 
         .breadcrumb-item.active {
@@ -39,76 +57,123 @@
         }
 
         .room-card {
-            border-radius: 12px;
+            border-radius: 16px;
             overflow: hidden;
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1);
             background-color: white;
+            border: none;
         }
 
         .room-card:hover {
-            transform: translateY(-5px);
+            transform: translateY(-8px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.12);
         }
 
         .room-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--secondary-color);
+            position: relative;
+            display: inline-block;
+        }
+
+        .room-number::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 50px;
+            height: 3px;
+            background-color: var(--accent-color);
+            border-radius: 3px;
+        }
+
+        .room-price {
             font-size: 1.8rem;
             font-weight: 700;
             color: var(--primary-color);
         }
 
-        .room-price {
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: var(--dark-color);
+        .room-price small {
+            font-size: 1rem;
+            font-weight: 400;
+            color: #6c757d;
         }
 
         .status-badge {
-            padding: 8px 12px;
-            border-radius: 20px;
-            font-weight: 500;
+            padding: 8px 16px;
+            border-radius: 50px;
+            font-weight: 600;
             font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
         }
 
         .available {
-            background-color: #E8F5E9;
-            color: #2E7D32;
+            background-color: rgba(76, 175, 80, 0.15);
+            color: var(--success-color);
         }
 
         .unavailable {
-            background-color: #FFEBEE;
-            color: #C62828;
+            background-color: rgba(230, 57, 70, 0.15);
+            color: var(--danger-color);
         }
 
         .facility-item {
-            margin-bottom: 8px;
+            margin-bottom: 10px;
             font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .facility-item i {
+            width: 24px;
+            text-align: center;
+            margin-right: 10px;
+            color: var(--primary-color);
         }
 
         .btn-book {
             background-color: var(--primary-color);
             border: none;
-            padding: 10px 25px;
+            padding: 12px 30px;
             font-weight: 600;
-            border-radius: 8px;
+            border-radius: 10px;
             transition: all 0.3s;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 15px rgba(42, 157, 143, 0.3);
+            text-transform: uppercase;
+            font-size: 0.9rem;
         }
 
         .btn-book:hover {
             background-color: var(--secondary-color);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(108, 99, 255, 0.3);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(38, 70, 83, 0.4);
         }
 
-        .btn-secondary {
-            border-radius: 8px;
-            padding: 10px 25px;
+        .btn-outline-secondary {
+            border-radius: 10px;
+            padding: 12px 25px;
             font-weight: 500;
+            border-width: 2px;
+            transition: all 0.3s;
+        }
+
+        .btn-outline-secondary:hover {
+            background-color: var(--secondary-color);
+            color: white;
+            border-color: var(--secondary-color);
         }
 
         .section-title {
             position: relative;
             margin-bottom: 1.5rem;
             font-weight: 600;
+            color: var(--secondary-color);
+            font-size: 1.3rem;
         }
 
         .section-title::after {
@@ -117,43 +182,134 @@
             left: 0;
             bottom: -8px;
             width: 50px;
-            height: 3px;
-            background-color: var(--primary-color);
-            border-radius: 3px;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+            border-radius: 4px;
         }
 
         .form-check-input:checked {
             background-color: var(--primary-color);
             border-color: var(--primary-color);
         }
+
+        .room-image {
+            height: 350px;
+            object-fit: cover;
+            width: 100%;
+            border-radius: 16px 16px 0 0;
+        }
+
+        .room-details {
+            padding: 25px;
+        }
+
+        .occupant-btn {
+            border-radius: 8px !important;
+            padding: 8px 20px;
+            font-weight: 500;
+        }
+
+        .rating {
+            color: var(--accent-color);
+            font-size: 1rem;
+            margin-left: 5px;
+        }
+
+        .amenities-section {
+            background-color: rgba(233, 196, 106, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .amenities-title {
+            color: var(--secondary-color);
+            font-weight: 600;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .amenities-title i {
+            margin-right: 10px;
+            color: var(--primary-color);
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, rgba(42, 157, 143, 0.1), rgba(233, 196, 106, 0.1));
+            border-left: 4px solid var(--primary-color);
+            padding: 15px;
+            border-radius: 0 8px 8px 0;
+            margin: 20px 0;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        @media (max-width: 768px) {
+            .room-number {
+                font-size: 1.6rem;
+            }
+
+            .room-price {
+                font-size: 1.4rem;
+            }
+
+            .action-buttons {
+                justify-content: center;
+            }
+
+            .btn-book,
+            .btn-outline-secondary {
+                width: 100%;
+            }
+        }
     </style>
 </head>
 
 <body>
-
-
-    <!-- Main Content -->
-    <div class="container my-5">
+    <div class="container py-5">
         <!-- Breadcrumb -->
-        <nav aria-label="breadcrumb">
+        <nav aria-label="breadcrumb" class="mb-4">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="#" class="text-decoration-none">Home</a></li>
-                <li class="breadcrumb-item active"><a href="#" class="text-decoration-none">Room</a></li>
+                <li class="breadcrumb-item"><a href="{{ route('user.home') }}" class="text-decoration-none"><i
+                            class="fas fa-home me-1"></i> Home</a></li>
+                <li class="breadcrumb-item"><a href="{{ route('user.listroom') }}" class="text-decoration-none">Daftar
+                        Kamar</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Detail Kamar</li>
             </ol>
         </nav>
 
-        <div class="row">
+        <div class="row g-4">
             <!-- Room Image -->
-            <div class="col-lg-6 mb-4">
+            <div class="col-lg-6">
                 <div class="room-card h-100">
-                    <img src="https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80"
-                        class="img-fluid rounded-top" alt="Room Image">
-                    <div class="p-4">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h2 class="room-number mb-0">Kamar No. 12</h2>
-                            <h3 class="room-price mb-0">Rp.1.200.000</h3>
+                    @if ($room->gambar)
+                        <img src="{{ asset('storage/' . $room->gambar) }}" class="room-image" alt="Room Image">
+                    @else
+                        <img src="https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80"
+                            class="room-image" alt="Room Image">
+                    @endif
+                    <div class="room-details">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div>
+                                <h2 class="room-number mb-2">Kamar No. {{ $room->no_kamar }}</h2>
+
+                            </div>
+                            <div class="text-end">
+                                <h3 class="room-price mb-0">Rp {{ number_format($room->harga, 0, ',', '.') }}</h3>
+                                <small class="text-muted">per bulan</small>
+                            </div>
                         </div>
-                        <p class="text-muted">Cozy room with all necessary facilities for comfortable living</p>
+
+                        <div class="highlight-box">
+                            <p class="mb-0">{{ $room->deskripsi_kamar }}</p>
+                        </div>
+
                     </div>
                 </div>
             </div>
@@ -164,12 +320,11 @@
                     <!-- Status -->
                     <div class="mb-4">
                         <h5 class="section-title">Status Kamar</h5>
-                        <div class="d-flex gap-3">
-                            <span class="status-badge available">
-                                <i class="fas fa-check-circle me-2"></i>Tersedia
-                            </span>
-                            <span class="status-badge unavailable">
-                                <i class="fas fa-times-circle me-2"></i>Tidak Tersedia
+                        <div class="d-flex align-items-center gap-3">
+                            <span class="status-badge {{ $room->status == 'available' ? 'available' : 'unavailable' }}">
+                                <i
+                                    class="fas {{ $room->status == 'available' ? 'fa-check-circle' : 'fa-times-circle' }} me-2"></i>
+                                {{ $room->status == 'available' ? 'Tersedia' : 'Tidak Tersedia' }}
                             </span>
                         </div>
                     </div>
@@ -180,60 +335,37 @@
                         <div class="btn-group" role="group">
                             <input type="radio" class="btn-check" name="occupants" id="occupant1" autocomplete="off"
                                 checked>
-                            <label class="btn btn-outline-primary" for="occupant1">1 Orang</label>
+                            <label class="btn btn-outline-primary occupant-btn" for="occupant1">1 Orang</label>
 
-                            <input type="radio" class="btn-check" name="occupants" id="occupant2" autocomplete="off">
-                            <label class="btn btn-outline-primary" for="occupant2">2 Orang</label>
                         </div>
                     </div>
 
                     <!-- Facilities -->
-                    <div class="mb-4">
-                        <h5 class="section-title">Fasilitas Kamar</h5>
+                    <div class="amenities-section">
+                        <h5 class="amenities-title">
+                            <i class="fas fa-list-check"></i> Fasilitas Kamar
+                        </h5>
                         <div class="row">
                             <div class="col-md-6">
-                                <div class="form-check facility-item">
-                                    <input class="form-check-input" type="checkbox" id="bathroom" checked>
-                                    <label class="form-check-label" for="bathroom">
-                                        <i class="fas fa-bath me-2"></i>Kamar Mandi Dalam
-                                    </label>
-                                </div>
-                                <div class="form-check facility-item">
-                                    <input class="form-check-input" type="checkbox" id="bed" checked>
-                                    <label class="form-check-label" for="bed">
-                                        <i class="fas fa-bed me-2"></i>Kasur
-                                    </label>
-                                </div>
-                                <div class="form-check facility-item">
-                                    <input class="form-check-input" type="checkbox" id="wardrobe" checked>
-                                    <label class="form-check-label" for="wardrobe">
-                                        <i class="fas fa-tshirt me-2"></i>Lemari Pakaian
-                                    </label>
-                                </div>
+                                @foreach (explode(',', $room->fasilitas) as $fasilitas)
+                                    <div class="facility-item">
+                                        <i class="fas fa-check-circle"></i>
+                                        <span>{{ trim($fasilitas) }}</span>
+                                    </div>
+                                @endforeach
                             </div>
-                            <div class="col-md-6">
-                                <div class="form-check facility-item">
-                                    <input class="form-check-input" type="checkbox" id="shoeRack" checked>
-                                    <label class="form-check-label" for="shoeRack">
-                                        <i class="fas fa-shoe-prints me-2"></i>Rak Sepatu
-                                    </label>
-                                </div>
-                                <div class="form-check facility-item">
-                                    <input class="form-check-input" type="checkbox" id="fan">
-                                    <label class="form-check-label" for="fan">
-                                        <i class="fas fa-fan me-2"></i>Kipas Angin
-                                    </label>
-                                </div>
-                            </div>
+                            
                         </div>
                     </div>
 
                     <!-- Booking Button -->
-                    <div class="d-grid gap-3 d-md-flex justify-content-md-end mt-4">
-                        <button class="btn btn-secondary">
-                            <i class="fas fa-door-open me-2"></i>Lihat Kamar Lainnya
-                        </button>
-                        <a href="{{ route('user.booking') }}" class="btn btn-book text-white">
+                    <div class="action-buttons mt-4">
+                        <a href="{{ route('user.listroom') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-door-open me-2"></i>Lihat Kamar Lain
+                        </a>
+
+                        <a href="{{ route('user.booking') }}" class="btn btn-book"
+                            {{ $room->status != 'available' ? 'disabled' : '' }}>
                             <i class="fas fa-calendar-check me-2"></i> Booking Sekarang
                         </a>
                     </div>
@@ -242,9 +374,31 @@
         </div>
     </div>
 
-
     <!-- Bootstrap JS Bundle with Popper -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Simple animation for page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const cards = document.querySelectorAll('.room-card');
+            cards.forEach((card, index) => {
+                setTimeout(() => {
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 150);
+            });
+
+            // Add initial styles for animation
+            const style = document.createElement('style');
+            style.textContent = `
+                .room-card {
+                    opacity: 0;
+                    transform: translateY(20px);
+                    transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+                }
+            `;
+            document.head.appendChild(style);
+        });
+    </script>
 </body>
 
 </html>

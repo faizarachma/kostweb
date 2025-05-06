@@ -20,7 +20,7 @@
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700">Fasilitas</label>
-                <div class="mt-2 space-y-2">
+                <div class="mt-2 flex flex-wrap gap-4"> <!-- Ubah ke flex dan tambahkan gap -->
                     <div class="flex items-center">
                         <input type="checkbox" id="fasilitas1" name="fasilitas[]" value="AC"
                             class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
@@ -47,26 +47,6 @@
                         <label for="fasilitas5" class="ml-2 block text-sm text-gray-900">Kipas Angin</label>
                     </div>
                 </div>
-            </div>
-
-            <!-- Tabel untuk menampilkan fasilitas yang dipilih -->
-            <div class="mt-8">
-                <h3 class="text-lg font-medium text-gray-900 mb-4">Fasilitas yang Dipilih</h3>
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th scope="col"
-                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                No</th>
-                            <th scope="col"
-                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Nama Fasilitas</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tabelFasilitas" class="bg-white divide-y divide-gray-200">
-                        <!-- Data akan ditampilkan di sini setelah dipilih -->
-                    </tbody>
-                </table>
             </div>
             <div>
                 <label for="gambar" class="block text-sm font-medium text-gray-700">Gambar</label>

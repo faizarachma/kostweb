@@ -145,7 +145,6 @@
                                     <i class="fas fa-eye me-2"></i>Lihat Detail
                                 </a>
 
-
                             </div>
                         </div>
                     </div>

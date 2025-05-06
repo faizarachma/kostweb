@@ -151,14 +151,17 @@
     <!-- Bootstrap JS Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Check if the status is booked and disable the link
         document.addEventListener("DOMContentLoaded", function() {
-            const kamarButton = document.querySelectorAll('a[id^="kamar-"]');
+            // Mengambil semua tombol kamar
+            const kamarButton = document.querySelectorAll('.btn');
+
             kamarButton.forEach(button => {
+                // Cek jika tombol memiliki class 'cursor-not-allowed'
                 if (button.classList.contains('cursor-not-allowed')) {
+                    // Cegah link di-click
                     button.addEventListener('click', function(event) {
-                        event.preventDefault(); // Prevent the default click action
-                        return false;
+                        event.preventDefault(); // Cegah aksi klik
+                        alert('Kamar sudah dibooking!');
                     });
                 }
             });
