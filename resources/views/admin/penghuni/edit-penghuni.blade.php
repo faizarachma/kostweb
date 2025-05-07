@@ -1,4 +1,7 @@
-<button type="button" class="bg-yellow-500 text-white p-2 rounded-full hover:bg-yellow-600" onclick="openEditModal()">
+<button type="button" class="bg-yellow-500 text-white p-2 rounded-full hover:bg-yellow-600" onclick="openEditModal(this)"
+    data-id="{{ $penghuni->id }}" data-nama="{{ $penghuni->no_kamar }}" data-hp="{{ $penghuni->harga }}"
+    data-email="{{ $penghuni->deskripsi_kamar }}" data-tgl="{{ $penghuni->tanggal_lahir }}"
+    data-alamat="{{ $penghuni->alamat }}" {{-- tambahkan alamat jika ada --}}>
     <svg viewBox="0 0 24 24" fill="none" class="w-5 h-5" xmlns="http://www.w3.org/2000/svg">
         <path
             d="M3.25 22C3.25 21.5858 3.58579 21.25 4 21.25H20C20.4142 21.25 20.75 21.5858 20.75 22C20.75 22.4142 20.4142 22.75 20 22.75H4C3.58579 22.75 3.25 22.4142 3.25 22Z"
@@ -11,3 +14,77 @@
             fill="#ffffff"></path>
     </svg>
 </button>
+
+
+<div id="editPenghuniModal"
+    class="hidden fixed inset-0 bg-gray-400 bg-opacity-20 flex items-center justify-center z-50 overflow-y-auto">
+    <div class="bg-white p-6 rounded-lg shadow-md w-full max-w-md my-10 overflow-y-auto max-h-[90vh]">
+        <h2 class="text-xl font-semibold mb-4">Tambah Kamar</h2>
+        <form id="editPenghuniForm" method="POST" enctype="multipart/form-data" class="space-y-4">
+            @csrf
+            @method('PUT') <!-- Untuk update -->
+            <input type="hidden" name="id" id="edit_id">
+
+            <div>
+                <label for="no_kamar" class="block text-sm font-medium text-gray-700">Nama Lengkap</label>
+                <input type="text" name="no_kamar" id="edit_no_kamar" required
+                    class="w-full border rounded px-3 py-2">
+            </div>
+            <div>
+                <label for="harga" class="block text-sm font-medium text-gray-700">No Hp</label>
+                <input type="number" name="harga" id="edit_harga" required class="w-full border rounded px-3 py-2">
+            </div>
+            <div>
+                <label for="deskripsi_kamar" class="block text-sm font-medium text-gray-700">Email</label>
+                <textarea name="deskripsi_kamar" id="edit_deskripsi_kamar" required class="w-full border rounded px-3 py-2"></textarea>
+            </div>
+            <div>
+                <label for="tanggal_lahir" class="block text-sm font-medium text-gray-700">Tanggal Lahir</label>
+                <input type="date" name="tanggal_lahir" id="edit_tanggal_lahir" required
+                    class="w-full border rounded px-3 py-2">
+            </div>
+            <div>
+                <label for="gambar" class="block text-sm font-medium text-gray-700">Alamat</label>
+                <input type="file" name="gambar" id="edit_gambar" class="w-full border rounded px-3 py-2">
+            </div>
+            <div class="flex justify-end space-x-2">
+                <button type="button" id="closeModalBtn"
+                    class="bg-gray-300 text-white px-4 py-2 rounded-full hover:bg-gray-600">Batal</button>
+                <button type="submit"
+                    class="bg-blue-500 text-white px-4 py-2 rounded-full hover:bg-blue-700">Update</button>
+            </div>
+        </form>
+
+    </div>
+</div>
+
+
+
+@push('scripts')
+    <script>
+        function openEditModal(button) {
+            const modal = document.getElementById('editPenghuniModal');
+            modal.classList.remove('hidden');
+
+            // Isi form dengan data dari tombol
+            document.getElementById('edit_id').value = button.dataset.id;
+            document.getElementById('edit_no_kamar').value = button.dataset.nama;
+            document.getElementById('edit_harga').value = button.dataset.hp;
+            document.getElementById('edit_deskripsi_kamar').value = button.dataset.email;
+            document.getElementById('edit_tanggal_lahir').value = button.dataset.tgl;
+
+            // Update action form
+            const form = document.getElementById('editPenghuniForm');
+            form.action = `/kamar/${button.dataset.id}`; // pastikan route-nya sesuai dengan route('kamar.update', $id)
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const closeModalBtn = document.getElementById('closeModalBtn');
+            const modal = document.getElementById('editPenghuniModal');
+
+            closeModalBtn.addEventListener('click', function() {
+                modal.classList.add('hidden');
+            });
+        });
+    </script>
+@endpush

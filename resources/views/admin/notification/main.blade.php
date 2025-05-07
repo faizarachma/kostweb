@@ -3,7 +3,6 @@
 @section('title', 'Kelola Pemesanan')
 
 @section('content')
-    @include('admin.layouts.header')
 
     <div class="bg-white p-6 rounded-xl shadow-lg mt-10">
         <div class="overflow-auto max-h-[70vh] rounded-lg">
@@ -17,10 +16,11 @@
                         <th class="px-6 py-3 text-left font-semibold tracking-wide uppercase border-b border-gray-300">No
                             Kamar</th>
                         <th class="px-6 py-3 text-left font-semibold tracking-wide uppercase border-b border-gray-300">
+                            Email</th>
+                        <th class="px-6 py-3 text-left font-semibold tracking-wide uppercase border-b border-gray-300">
                             Tanggal Sewa</th>
-                        <th class="px-6 py-3 text-left font-semibold tracking-wide uppercase border-b border-gray-300">Bukti
-                            Pembayaran</th>
-                        <th class="px-6 py-3 text-left font-semibold tracking-wide uppercase border-b border-gray-300">Status
+                        <th class="px-6 py-3 text-left font-semibold tracking-wide uppercase border-b border-gray-300">Jatuh
+                            Tempo
                         </th>
                         <th class="px-6 py-3 text-left font-semibold tracking-wide uppercase border-b border-gray-300">Aksi
                         </th>

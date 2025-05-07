@@ -19,8 +19,10 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('user.logout');
 
 Route::get('/listroom', [AuthController::class, 'listRoom'])->name('user.listroom');
 Route::get('/room/{id}', [AuthController::class, 'detailRoom'])->name('user.detailroom');
-Route::get('/booking', [AuthController::class, 'bookingroom']) -> name('user.booking');
 
+Route::middleware(['auth'])->group(function() {
+    Route::get('/booking', [AuthController::class, 'bookingroom'])->name('user.booking');
+});
 
 // Payment route
 Route::get('/payment', [PaymentController::class, 'createTransaction']);
@@ -57,5 +59,7 @@ Route::post('/admin/pemesanan/destroy/{id}', [AdminController::class, 'destroyPe
 // Tenant management
 Route::get('/admin/penghuni', [AdminController::class, 'indexPenghuni'])->name('penghuni');
 Route::post('/admin/penghuni/store', [AdminController::class, 'storePenghuni'])->name('penghuni.store');
+Route::get('/admin/penghuni/edit/{id}', [AdminController::class, 'editPenghuni'])->name('penghuni.edit');
 Route::post('/admin/penghuni/update/{id}', [AdminController::class, 'updatePenghuni'])->name('penghuni.update');
+
 Route::post('/admin/penghuni/destroy/{id}', [AdminController::class, 'destroyPenghuni'])->name('penghuni.destroy');

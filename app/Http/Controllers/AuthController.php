@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\KelolaKamar; // Assuming you have a Room model
 use Illuminate\Support\Facades\Hash;
 
+
 class AuthController extends Controller
 {
     public function index(){
@@ -97,11 +98,25 @@ class AuthController extends Controller
         return view('user.detailroom', compact('room'));
     }
 
-    public function bookingroom(){
 
+    public function bookingroom(Request $request)
+    {
+        if (!Auth::check()) {
+            return redirect()->route('login')->with('error', 'Silakan login terlebih dahulu untuk melakukan booking.');
+        }
 
-        return view('user.booking');
+        $roomId = $request->query('room_id');
+        $room = null;
+
+        if ($roomId) {
+            $room = KelolaKamar::find($roomId);
+        }
+
+        return view('user.booking', compact('room'));
     }
+
+    
+
 
     public function logout()
     {

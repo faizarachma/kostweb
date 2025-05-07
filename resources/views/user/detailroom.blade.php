@@ -354,7 +354,7 @@
                                     </div>
                                 @endforeach
                             </div>
-                            
+
                         </div>
                     </div>
 
@@ -364,15 +364,38 @@
                             <i class="fas fa-door-open me-2"></i>Lihat Kamar Lain
                         </a>
 
-                        <a href="{{ route('user.booking') }}" class="btn btn-book"
-                            {{ $room->status != 'available' ? 'disabled' : '' }}>
+                        <a href="{{ auth()->check() ? route('user.booking', ['room_id' => $room->id]) : '#' }}"
+                            class="btn btn-book {{ $room->status != 'available' ? 'disabled cursor-not-allowed opacity-50' : '' }}"
+                            @if (!auth()->check()) data-bs-toggle="modal" data-bs-target="#loginModal" @endif>
                             <i class="fas fa-calendar-check me-2"></i> Booking Sekarang
                         </a>
+
+
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Modal: Login Dulu -->
+    <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-3 shadow">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="loginModalLabel">Akses Dibatasi</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                </div>
+                <div class="modal-body">
+                    Anda harus login terlebih dahulu untuk melakukan booking kamar ini.
+                </div>
+                <div class="modal-footer">
+                    <a href="{{ route('auth.user.login') }}" class="btn btn-primary">Login</a>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 
     <!-- Bootstrap JS Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

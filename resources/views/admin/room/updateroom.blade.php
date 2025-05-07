@@ -19,7 +19,7 @@
     <div class="bg-white p-6 rounded-lg shadow-md w-full max-w-md">
         <h2 class="text-xl font-semibold mb-4">Edit Kamar</h2>
 
-        <form id="editKamarForm" method="POST" action="{{ route('kamar.update.post', $item->id) }}"
+        <form id="editKamarForm" method="POST" action="{{ route('kamar.update', ['id' => '__ID__']) }}"
             enctype="multipart/form-data" class="space-y-4">
             @csrf
             @method('PUT')
@@ -35,7 +35,7 @@
             <!-- Harga -->
             <div>
                 <label for="edit_harga" class="block text-sm font-medium text-gray-700">Harga</label>
-                <input type="text" name="harga" id="edit_harga" required class="w-full border rounded px-3 py-2">
+                <input type="number" name="harga" id="edit_harga" required class="w-full border rounded px-3 py-2">
             </div>
 
             <!-- Deskripsi -->
@@ -45,20 +45,15 @@
             </div>
 
             <!-- Fasilitas -->
-            @php
-                $selectedFasilitas = old('fasilitas', explode(', ', $item->fasilitas));
-            @endphp
-
             <div>
                 <label class="block text-sm font-medium text-gray-700">Fasilitas</label>
                 <div class="mt-2 flex flex-wrap gap-4">
                     @foreach (['AC', 'WiFi', 'TV', 'Kulkas', 'kipas'] as $index => $fasilitas)
                         <div class="flex items-center">
-                            <input type="checkbox" id="fasilitas{{ $index + 1 }}" name="fasilitas[]"
+                            <input type="checkbox" id="edit_fasilitas{{ $index + 1 }}" name="fasilitas[]"
                                 value="{{ $fasilitas }}"
-                                class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-                                {{ in_array($fasilitas, $selectedFasilitas) ? 'checked' : '' }}>
-                            <label for="fasilitas{{ $index + 1 }}" class="ml-2 block text-sm text-gray-900">
+                                class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                            <label for="edit_fasilitas{{ $index + 1 }}" class="ml-2 block text-sm text-gray-900">
                                 {{ $fasilitas === 'kipas' ? 'Kipas Angin' : $fasilitas }}
                             </label>
                         </div>
@@ -66,16 +61,12 @@
                 </div>
             </div>
 
-
             <!-- Status -->
             <div>
-                <label for="edit_status" class="block text-sm font-medium text-gray-700">Ubah Status</label>
+                <label for="edit_status" class="block text-sm font-medium text-gray-700">Status</label>
                 <select name="status" id="edit_status" required class="w-full border rounded px-3 py-2">
-                    <option value="available"
-                        {{ old('status', $item->status ?? '') == 'available' ? 'selected' : '' }}>
-                        Available</option>
-                    <option value="booked" {{ old('status', $item->status ?? '') == 'booked' ? 'selected' : '' }}>
-                        Booked</option>
+                    <option value="available">Available</option>
+                    <option value="booked">Booked</option>
                 </select>
             </div>
 
@@ -83,14 +74,14 @@
             <div>
                 <label for="edit_gambar" class="block text-sm font-medium text-gray-700">Gambar</label>
                 <input type="file" name="gambar" id="edit_gambar" class="w-full border rounded px-3 py-2"
-                    onchange="previewEditImage(event)">
+                    accept="image/*" onchange="previewEditImage(event)">
 
                 <div class="mt-2 space-y-2">
                     <img id="current_image" src="" alt="Gambar Saat Ini"
-                        class="w-32 h-32 object-cover rounded border border-gray-300">
+                        class="w-32 h-32 object-cover rounded border border-gray-300 hidden">
                     <img id="preview_gambar" src="#" alt="Preview Gambar Baru"
                         class="w-32 h-32 object-cover rounded hidden mt-2 border border-blue-300">
-                    <div id="no_image" class="text-gray-500 text-sm hidden">Tidak ada gambar</div>
+                    <div id="no_image" class="text-gray-500 text-sm">Tidak ada gambar</div>
                 </div>
             </div>
 
@@ -108,14 +99,13 @@
     </div>
 </div>
 
-
 <script>
-    let currentEditId = null;
+    function openEditModal(id, no_kamar, harga, deskripsi_kamar, fasilitas, status, gambarUrl) {
+        // Set form action dengan ID yang benar
+        const form = document.getElementById('editKamarForm');
+        form.action = form.action.replace('__ID__', id);
 
-    function openEditModal(id, no_kamar, harga, deskripsi_kamar, fasilitas = [], status, gambarUrl) {
-        currentEditId = id;
-
-        // Set nilai input teks
+        // Set nilai input
         document.getElementById('edit_id').value = id;
         document.getElementById('edit_no_kamar').value = no_kamar;
         document.getElementById('edit_harga').value = harga;
@@ -123,29 +113,29 @@
         document.getElementById('edit_status').value = status;
 
         // Reset semua checkbox fasilitas
-        const checkboxFasilitas = document.querySelectorAll('input[name="fasilitas[]"]');
-        checkboxFasilitas.forEach(checkbox => {
+        document.querySelectorAll('input[name="fasilitas[]"]').forEach(checkbox => {
             checkbox.checked = false;
         });
 
-        // Tandai fasilitas yang sesuai
-        if (Array.isArray(fasilitas)) {
-            fasilitas.forEach(f => {
-                const checkbox = Array.from(checkboxFasilitas).find(cb => cb.value === f);
+        // Set fasilitas yang dipilih
+        if (fasilitas) {
+            const fasilitasArray = fasilitas.split(', ');
+            fasilitasArray.forEach(f => {
+                const checkbox = document.querySelector(`input[name="fasilitas[]"][value="${f.trim()}"]`);
                 if (checkbox) {
                     checkbox.checked = true;
                 }
             });
         }
 
-        // Reset file input dan preview
-        document.getElementById('edit_gambar').value = '';
-        const preview = document.getElementById('preview_gambar');
+        // Handle gambar
         const currentImage = document.getElementById('current_image');
         const noImage = document.getElementById('no_image');
+        const preview = document.getElementById('preview_gambar');
 
-        preview.classList.add('hidden');
+        // Reset preview
         preview.src = '#';
+        preview.classList.add('hidden');
 
         if (gambarUrl) {
             currentImage.src = gambarUrl;
@@ -165,23 +155,27 @@
     }
 
     function previewEditImage(event) {
+        const input = event.target;
         const preview = document.getElementById('preview_gambar');
         const currentImage = document.getElementById('current_image');
         const noImage = document.getElementById('no_image');
-        const file = event.target.files[0];
 
-        if (file) {
+        if (input.files && input.files[0]) {
             const reader = new FileReader();
+
             reader.onload = function(e) {
                 preview.src = e.target.result;
                 preview.classList.remove('hidden');
                 currentImage.classList.add('hidden');
                 noImage.classList.add('hidden');
             };
-            reader.readAsDataURL(file);
+
+            reader.readAsDataURL(input.files[0]);
         } else {
+            preview.src = '#';
             preview.classList.add('hidden');
-            if (currentImage.src && currentImage.src !== '#') {
+
+            if (currentImage.src && !currentImage.src.includes('#')) {
                 currentImage.classList.remove('hidden');
                 noImage.classList.add('hidden');
             } else {

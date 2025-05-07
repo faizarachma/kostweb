@@ -1,4 +1,4 @@
-<button type="button" class="bg-red-500 text-white p-2 rounded-full hover:bg-red-600" onclick="openDeleteModal()">
+<button type="button" class="bg-red-500 text-white p-2 rounded-full hover:bg-red-600" onclick="openDeleteModal">
     <svg viewBox="0 0 24 24" fill="none" class="w-5 h-5" xmlns="http://www.w3.org/2000/svg">
         <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
         <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
@@ -12,3 +12,36 @@
         </g>
     </svg>
 </button>
+
+<div id="deleteModal" class="hidden fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white p-6 rounded-lg shadow-md w-1/3">
+        <h2 class="text-xl font-semibold mb-4">Konfirmasi Hapus</h2>
+        <p>Apakah Anda yakin ingin menghapus data ini?</p>
+        <div class="flex justify-end space-x-5 mt-4">
+            <button type="button" class="bg-gray-300 text-white px-4 py-2 rounded-full hover:bg-gray-600"
+                onclick="">Batal</button>
+            <form action="" method="POST" class="inline-block">
+                @csrf
+                @method('DELETE')
+                <button type="submit"
+                    class="bg-red-500 text-white px-4 py-2 rounded-full hover:bg-red-600">Hapus</button>
+            </form>
+        </div>
+    </div>
+</div>
+<script>
+    function closeDeleteModal(id) {
+        document.getElementById('deleteModal-' + id).classList.add('hidden');
+    }
+
+    function openDeleteModal(id) {
+        document.getElementById('deleteModal-' + id).classList.remove('hidden');
+    }
+
+    document.addEventListener('click', function(event) {
+        if (event.target.matches('.delete-button')) {
+            const id = event.target.getAttribute('data-id');
+            openDeleteModal(id);
+        }
+    });
+</script>

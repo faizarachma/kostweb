@@ -10,33 +10,37 @@
     @include('admin.penghuni.create')
 
     {{-- Tabel Data Kamar --}}
-
-    <div class="bg-white p-4 rounded-lg shadow-md mt-10">
+    <div class="bg-white rounded-lg shadow-md p-6 mt-10">
         <div class="overflow-x-auto">
-            <table class="w-full bg-white rounded-lg shadow-md border-collapse">
-                <thead>
-                    <tr class="bg-gray-200 text-gray-700 text-left border-b">
-                        <th class="p-4 border-r">No</th>
-                        <th class="p-4 border-r">Nama Lengkap</th>
-                        <th class="p-4 border-r">No Hp</th>
-                        <th class="p-4 border-r">Email</th>
-                        <th class="p-4 border-r">Tanggal Lahir</th>
-                        <th class="p-4 border-r">Alamat</th>
-                        <th class="p-4">Aksi</th>
+            <table class="w-full bg-white rounded-lg overflow-hidden">
+                <thead class="sticky top-0 bg-gray-100 text-gray-700">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">No</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Nama Lengkap</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">No Hp</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Email</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Tanggal Lahir</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Alamat</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Aksi</th>
                     </tr>
                 </thead>
-                <tbody>
-                    @foreach ($penghuni as $index => $user)
-                        <tr class="border-b">
-                            <td class="p-4 border-r">{{ $loop->iteration }}</td>
-                            <td class="p-4 border-r">{{ $user->name }}</td>
-                            <td class="p-4 border-r">{{ $user->no_hp }}</td>
-                            <td class="p-4 border-r">{{ $user->email }}</td>
-                            <td class="p-4 border-r">{{ $user->tanggal_lahir }}</td>
-                            <td class="p-4 border-r">{{ $user->alamat }}</td>
-                            <td class="p-4">
-                                @include('admin.penghuni.edit-penghuni')
-                                @include('admin.penghuni.hapus-penghuni')
+                <tbody class="divide-y divide-gray-200">
+                    @foreach ($penghuni as $user)
+                        <tr class="hover:bg-gray-50 transition-colors">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $loop->iteration }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $user->name }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $user->no_hp }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $user->email }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $user->tanggal_lahir }}</td>
+                            <td class="px-6 py-4 text-sm text-gray-500 max-w-xs">
+                                <div class="line-clamp-1">{{ $user->alamat }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center space-x-2">
+                                    @include('admin.penghuni.edit-penghuni')
+                                    @include('admin.penghuni.hapus-penghuni')
+                                </div>
                             </td>
                         </tr>
                     @endforeach
@@ -45,13 +49,11 @@
         </div>
     </div>
 
+
+    @stack('scripts')
+
     {{-- Pagination --}}
     {{-- <div class="mt-4">
         {{ $kamar->links('vendor.pagination.tailwind') }}
     </div> --}}
 @endsection
-
-
-<script>
-    
-</script>

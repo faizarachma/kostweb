@@ -9,6 +9,9 @@ use App\Models\KelolaPemesanan;
 use App\Models\KelolaPenghuni;
 use App\Models\User;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+
+
 
 use Illuminate\Pagination\Paginator;
 
@@ -107,10 +110,6 @@ class AdminController extends Controller
     }
 
 
-
-
-
-
     public function editKamar($id)
     {
         $kamar = KelolaKamar::findOrFail($id);
@@ -147,7 +146,7 @@ class AdminController extends Controller
         }
 
         $notifikasi = $query->paginate(10);
-        return view('admin.notification.createnotif', compact('notifikasi'));
+        return view('admin.notification.main', compact('notifikasi'));
 
     }
 
@@ -221,69 +220,53 @@ class AdminController extends Controller
     // Kelola Penghuni
     public function indexPenghuni(Request $request)
     {
-
-
         $penghuni = User::where('role', '!=', 'admin')->get();
 
         return view('admin.penghuni.main', compact('penghuni'));
-
     }
+
 
     public function storePenghuni(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'no_ktp' => 'required|string|unique:kelola_penghuni',
-            'alamat' => 'required|string',
-            'no_telepon' => 'required|string',
-            'email' => 'required|email|unique:kelola_penghuni',
-            'foto_ktp' => 'required|image|mimes:jpeg,png,jpg|max:2048',
+            'nama_lengkap'   => 'required|string|max:255',
+            'email'          => 'required|email|unique:users,email',
+            'no_hp'          => 'required|string|max:20|unique:users,no_hp',
+            'tanggal_lahir'  => 'required|date',
+            'alamat'         => 'required|string',
+        ], [
+            'email.unique'  => 'Email sudah terdaftar. Gunakan email lain.',
+            'no_hp.unique'  => 'Nomor HP sudah digunakan. Gunakan nomor lain.',
         ]);
 
         try {
-            if ($request->hasFile('foto_ktp')) {
-                $path = $request->file('foto_ktp')->store('penghuni/ktp', 'public');
-                $validated['foto_ktp'] = $path;
-            }
+            // Generate username unik
+            do {
+                $username = Str::slug($validated['nama_lengkap']) . rand(100, 999);
+            } while (User::where('username', $username)->exists());
 
-            KelolaPenghuni::create($validated);
-            return redirect()->route('penghuni')->with('success', 'Penghuni berhasil ditambahkan');
+            // Simpan data penghuni ke tabel `users`
+            User::create([
+                'name'           => $validated['nama_lengkap'],
+                'username'       => $username,
+                'email'          => $validated['email'],
+                'no_hp'          => $validated['no_hp'],
+                'tanggal_lahir'  => $validated['tanggal_lahir'],
+                'alamat'         => $validated['alamat'],
+                'role'           => 'user',
+                'password'       => bcrypt('12345678'), // default password
+            ]);
+
+
+
+            return redirect()->route('users.index')->with('success', 'Penghuni berhasil ditambahkan sebagai user.');
         } catch (\Exception $e) {
-            return back()->withInput()->with('error', 'Gagal menambahkan penghuni: '.$e->getMessage());
+            return back()->withInput()->with('error', 'Gagal menambahkan penghuni: ' . $e->getMessage());
         }
     }
 
-    public function updatePenghuni(Request $request, $id)
-    {
-        $penghuni = KelolaPenghuni::findOrFail($id);
 
-        $validated = $request->validate([
-            'nama' => 'required|string|max:255',
-            'no_ktp' => 'required|string|unique:kelola_penghuni,no_ktp,'.$id,
-            'alamat' => 'required|string',
-            'no_telepon' => 'required|string',
-            'email' => 'required|email|unique:kelola_penghuni,email,'.$id,
-            'foto_ktp' => 'sometimes|image|mimes:jpeg,png,jpg|max:2048',
-        ]);
 
-        try {
-            if ($request->hasFile('foto_ktp')) {
-                // Hapus foto lama jika ada
-                if ($penghuni->foto_ktp) {
-                    Storage::disk('public')->delete($penghuni->foto_ktp);
-                }
-
-                // Simpan foto baru
-                $path = $request->file('foto_ktp')->store('penghuni/ktp', 'public');
-                $validated['foto_ktp'] = $path;
-            }
-
-            $penghuni->update($validated);
-            return redirect()->route('penghuni')->with('success', 'Penghuni berhasil diperbarui');
-        } catch (\Exception $e) {
-            return back()->withInput()->with('error', 'Gagal memperbarui penghuni: '.$e->getMessage());
-        }
-    }
 
     public function destroyPenghuni($id)
     {
