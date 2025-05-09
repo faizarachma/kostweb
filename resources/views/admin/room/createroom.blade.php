@@ -8,7 +8,13 @@
             @csrf
             <div>
                 <label for="no_kamar" class="block text-sm font-medium text-gray-700">No Kamar</label>
-                <input type="text" name="no_kamar" id="no_kamar" required class="w-full border rounded px-3 py-2">
+                <input type="text" name="no_kamar" id="no_kamar" required
+                    class="w-full border rounded px-3 py-2 @error('no_kamar') border-red-500 @enderror"
+                    value="{{ old('no_kamar', $kamar->no_kamar ?? '') }}">
+
+                @error('no_kamar')
+                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                @enderror
             </div>
             <div>
                 <label for="harga" class="block text-sm font-medium text-gray-700">Harga</label>

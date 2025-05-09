@@ -32,7 +32,7 @@
             </div>
             <input type="text"
                 class="pl-10 pr-4 py-2 border rounded-full w-full focus:outline-none focus:ring focus:border-blue-300"
-                placeholder="Cari kamar...">
+                placeholder="Cari Data">
         </div>
 
     </div>
@@ -60,7 +60,12 @@
             const applyFilterBtn = document.getElementById('applyFilterBtn');
             const popupStartDate = document.getElementById('popupStartDate');
             const popupEndDate = document.getElementById('popupEndDate');
-            const searchInput = document.querySelector('input[type="text"]');
+            const searchInput = document.querySelector('.relative.w-64 input[type="text"]');
+
+            // Set default dates (today)
+            const today = new Date().toISOString().split('T')[0];
+            popupStartDate.value = today;
+            popupEndDate.value = today;
 
             // Toggle filter popup
             filterButton.addEventListener('click', function(e) {
@@ -75,8 +80,44 @@
 
             // Apply filter logic
             applyFilterBtn.addEventListener('click', function() {
+                applyFilters();
+            });
+
+            // Search functionality
+            if (searchInput) {
+                let searchTimeout;
+
+                searchInput.addEventListener('input', function(e) {
+                    clearTimeout(searchTimeout);
+
+                    searchTimeout = setTimeout(() => {
+                        const searchTerm = e.target.value.trim();
+                        if (searchTerm.length >= 2 || searchTerm.length === 0) {
+                            applyFilters();
+                        }
+                    }, 500);
+                });
+
+                // Also trigger search on Enter key
+                searchInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        applyFilters();
+                    }
+                });
+            }
+
+            // Close popup when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!filterPopup.contains(e.target) && e.target !== filterButton) {
+                    filterPopup.classList.add('hidden');
+                }
+            });
+
+            // Main function to apply both filters and search
+            function applyFilters() {
                 const startDate = popupStartDate.value;
                 const endDate = popupEndDate.value;
+                const searchTerm = searchInput ? searchInput.value.trim() : '';
 
                 // Validate dates
                 if (startDate && endDate && new Date(startDate) > new Date(endDate)) {
@@ -87,48 +128,78 @@
                 // Prepare filter data
                 const filters = {
                     start_date: startDate,
-                    end_date: endDate
+                    end_date: endDate,
+                    search: searchTerm
                 };
 
-                // You can use this data to filter your table or make an API call
-                console.log('Filters applied:', filters);
+                console.log('Applying filters:', filters);
 
                 // Here you would typically:
-                // 1. Update a table with filtered data
-                // 2. Or make an AJAX request to get filtered data
-                // Example: filterRooms(filters);
+                // 1. For AJAX implementation:
+                fetchFilteredData(filters);
 
-                // Close the popup
-                filterPopup.classList.add('hidden');
-            });
-
-            // Search functionality
-            if (searchInput) {
-                let searchTimeout;
-
-                searchInput.addEventListener('input', function(e) {
-                    clearTimeout(searchTimeout);
-                    const searchTerm = e.target.value.trim();
-
-                    // Debounce the search to avoid too many requests
-                    searchTimeout = setTimeout(() => {
-                        if (searchTerm.length >= 2 || searchTerm.length === 0) {
-                            console.log('Searching for:', searchTerm);
-                            // Here you would typically:
-                            // 1. Filter local data
-                            // 2. Or make an AJAX request
-                            // Example: searchRooms(searchTerm);
-                        }
-                    }, 300);
-                });
+                // OR 2. For client-side filtering:
+                // filterTableData(filters);
             }
 
-            // Close popup when clicking outside
-            document.addEventListener('click', function(e) {
-                if (!filterPopup.contains(e.target) && e.target !== filterButton) {
-                    filterPopup.classList.add('hidden');
-                }
-            });
+            // Example AJAX implementation
+            function fetchFilteredData(filters) {
+                // Get current URL without query parameters
+                const currentUrl = window.location.href.split('?')[0];
+
+                // Build query string
+                const queryParams = new URLSearchParams();
+
+                if (filters.start_date) queryParams.append('start_date', filters.start_date);
+                if (filters.end_date) queryParams.append('end_date', filters.end_date);
+                if (filters.search) queryParams.append('search', filters.search);
+
+                // Show loading indicator
+                // document.getElementById('loadingIndicator').classList.remove('hidden');
+
+                // Make AJAX request
+                fetch(`${currentUrl}?${queryParams.toString()}`, {
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    })
+                    .then(response => response.text())
+                    .then(html => {
+                        // Update the table or relevant section
+                        // Example: document.getElementById('dataTable').innerHTML = html;
+                        console.log('Data fetched successfully');
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Gagal memuat data');
+                    })
+                    .finally(() => {
+                        // Hide loading indicator
+                        // document.getElementById('loadingIndicator').classList.add('hidden');
+                    });
+            }
+
+            // Example client-side filtering implementation
+            function filterTableData(filters) {
+                const rows = document.querySelectorAll('tbody tr');
+
+                rows.forEach(row => {
+                    const rowDate = row.getAttribute(
+                        'data-date'); // Assuming each row has data-date attribute
+                    const rowText = row.textContent.toLowerCase();
+
+                    // Check date filter
+                    const datePassed = !filters.start_date || !filters.end_date ||
+                        (rowDate >= filters.start_date && rowDate <= filters.end_date);
+
+                    // Check search filter
+                    const searchPassed = !filters.search ||
+                        rowText.includes(filters.search.toLowerCase());
+
+                    // Show/hide row based on filters
+                    row.style.display = (datePassed && searchPassed) ? '' : 'none';
+                });
+            }
         });
     </script>
 @endpush

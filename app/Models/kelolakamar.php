@@ -15,4 +15,9 @@ class KelolaKamar extends Model
     protected $casts = [
         'fasilitas' => 'array',
     ];
+
+    public function pemesanan()
+    {
+        return $this->hasOne(KelolaPemesanan::class, 'kamar_id');
+    }
 }

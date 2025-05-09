@@ -10,20 +10,22 @@ return new class extends Migration
      * Run the migrations.
      */
     public function up()
-{
-    Schema::create('kelola_pemesanan', function (Blueprint $table) {
-        $table->id();
-        $table->string('nama_penghuni');
-        $table->unsignedBigInteger('nomor_kamar');
-        $table->unsignedBigInteger('notifikasi_id');
-        $table->string('bukti_pembayaran')->nullable();
-        $table->enum('status_pembayaran', ['pending', 'lunas', 'gagal']);
-        $table->timestamps();
+    {
+        Schema::create('kelola_pemesanan', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('penghuni_id'); // Relasi ke tabel 'users' untuk penghuni
+            $table->unsignedBigInteger('kamar_id'); // Relasi ke tabel 'kelola_kamar' untuk kamar
+            $table->date('tanggal_sewa'); // Tanggal sewa
+            $table->string('bukti_pembayaran')->nullable(); // Bukti pembayaran
+            $table->enum('status', ['Menunggu', 'Diterima', 'Ditolak']); // Status pemesanan
+            $table->timestamps();
 
-        $table->foreign('nomor_kamar')->references('id')->on('kelola_kamar')->onDelete('cascade');
-        $table->foreign('notifikasi_id')->references('id')->on('kelola_notifikasi')->onDelete('cascade');
-    });
-}
+            // Menambahkan foreign key constraint untuk penghuni dan kamar
+            $table->foreign('penghuni_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('kamar_id')->references('id')->on('kelola_kamar')->onDelete('cascade');
+        });
+    }
+
     /**
      * Reverse the migrations.
      */

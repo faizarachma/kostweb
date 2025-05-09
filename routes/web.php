@@ -32,6 +32,7 @@ Route::get('/admin/login', [AdminAuthController::class, 'showLoginForm'])->name(
 Route::post('/admin/login', [AdminAuthController::class, 'login'])->name('login.admin');
 Route::get('/admin/logout', [AdminAuthController::class, 'logout'])->name('admin.logout');
 
+
 Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
 
 // Room management
@@ -52,7 +53,7 @@ Route::post('/admin/notifikasi/destroy/{id}', [AdminController::class, 'destroyN
 Route::get('/admin/pemesanan', [AdminController::class, 'indexPemesanan'])->name('pemesanan');
 Route::post('/admin/pemesanan/store', [AdminController::class, 'storePemesanan'])->name('pemesanan.store');
 Route::post('/admin/pemesanan/update/{id}', [AdminController::class, 'updatePemesanan'])->name('pemesanan.update');
-Route::post('/admin/pemesanan/destroy/{id}', [AdminController::class, 'destroyPemesanan'])->name('pemesanan.destroy');
+Route::delete('/admin/pemesanan/destroy/{id}', [AdminController::class, 'destroyPemesanan'])->name('pemesanan.destroy');
 
 // Tenant management
 Route::get('/admin/penghuni', [AdminController::class, 'indexPenghuni'])->name('penghuni');

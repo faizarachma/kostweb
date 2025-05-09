@@ -9,23 +9,29 @@ class KelolaPemesanan extends Model
 {
     use HasFactory;
 
+    // Menentukan nama tabel yang digunakan
     protected $table = 'kelola_pemesanan';
 
+    // Menentukan kolom-kolom yang bisa diisi mass-assignment
     protected $fillable = [
-        'nama_penghuni',
-        'nomor_kamar',
-        'tanggal_mulai_sewa',
-        'bukti_pembayaran',
-        'status_pembayaran',
+        'penghuni_id',  // ID Penghuni yang melakukan pemesanan
+        'kamar_id',     // ID Kamar yang dipesan
+        'tanggal_sewa', // Tanggal sewa kamar
+        'bukti_pembayaran', // Bukti pembayaran
+        'status',        // Status pemesanan (Menunggu, Diterima, Ditolak)
     ];
 
-    public function kamar()
+    // Relasi ke model User (Penghuni)
+    public function penghuni()
     {
-        return $this->belongsTo(KelolaKamar::class, 'nomor_kamar', 'no_kamar');
+        return $this->belongsTo(User::class, 'penghuni_id');  // Penghuni yang memesan
     }
 
-    public function notifikasi()
+
+    // Relasi ke model KelolaKamar (Kamar)
+    public function kamar()
     {
-        return $this->belongsTo(KelolaNotifikasi::class, 'tanggal_mulai_sewa', 'tanggal_mulai_sewa');
+        return $this->belongsTo(KelolaKamar::class, 'kamar_id');  // Kamar yang dipesan
     }
 }
+

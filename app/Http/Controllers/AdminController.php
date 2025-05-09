@@ -10,6 +10,7 @@ use App\Models\KelolaPenghuni;
 use App\Models\User;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
 
 
 
@@ -60,79 +61,94 @@ class AdminController extends Controller
     }
 
 
-
     public function storeKamar(Request $request)
     {
+        // Validate the incoming request data
         $validated = $request->validate([
             'no_kamar' => 'required|unique:kelola_kamar',
             'harga' => 'required|numeric|min:0',
             'deskripsi_kamar' => 'required|string|max:500',
-            'fasilitas' => 'required|array', // Ubah ke array untuk checkbox
-            'fasilitas.*' => 'string', // Validasi setiap item dalam array
-            'gambar' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'status' => 'in:available,booked',
+            'fasilitas' => 'required|array', // Make sure 'fasilitas' is an array (from checkboxes)
+            'fasilitas.*' => 'string', // Validate each item in the 'fasilitas' array as a string
+            'gambar' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048', // Image validation
+            'status' => 'in:available,booked', // Only allow 'available' or 'booked' status
         ]);
 
+        // Set the default status if not provided
         if (!isset($validated['status'])) {
             $validated['status'] = 'available';
         }
 
         try {
+            // Check if the request has a file for 'gambar' and store it
             if ($request->hasFile('gambar')) {
                 $path = $request->file('gambar')->store('kamar', 'public');
                 $validated['gambar'] = $path;
             }
 
-            // Ubah array fasilitas menjadi string (bisa juga disimpan sebagai JSON)
+            // Convert the 'fasilitas' array into a comma-separated string
             $validated['fasilitas'] = implode(', ', $validated['fasilitas']);
 
+            // Create a new 'KelolaKamar' record with the validated data
             KelolaKamar::create($validated);
+
+            // Redirect back to 'kamar' with a success message
             return redirect()->route('kamar')->with('success', 'Kamar berhasil ditambahkan');
         } catch (\Exception $e) {
+            // If an error occurs, redirect back with error message
             return back()->withInput()->with('error', 'Gagal menambahkan kamar: '.$e->getMessage());
         }
     }
 
 
-   public function updateKamar(Request $request, $id)
+    public function updateKamar(Request $request, $id)
 {
+    // Validate the request data with more flexible rules
     $validated = $request->validate([
         'no_kamar' => 'required|unique:kelola_kamar,no_kamar,' . $id,
         'harga' => 'required|numeric|min:100000',
         'deskripsi_kamar' => 'required|string|max:500',
-        'fasilitas' => 'required|array|min:1',
+        'fasilitas' => 'nullable|array', // Changed to nullable
         'fasilitas.*' => 'string|in:AC,WiFi,TV,Kulkas,kipas',
         'gambar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-        'status' => 'required|in:available,booked',
+        'status' => 'required|in:available,booked', // Added maintenance option
     ]);
 
+    DB::beginTransaction();
     try {
         $kamar = KelolaKamar::findOrFail($id);
 
-        // Handle gambar
+        // Handle image upload
         if ($request->hasFile('gambar')) {
-            // Hapus gambar lama jika ada
-            if ($kamar->gambar && Storage::disk('public')->exists($kamar->gambar)) {
+            // Delete old image if exists
+            if ($kamar->gambar) {
                 Storage::disk('public')->delete($kamar->gambar);
             }
             $validated['gambar'] = $request->file('gambar')->store('kamar', 'public');
-        } else {
-            // Pertahankan gambar lama jika tidak ada gambar baru
-            $validated['gambar'] = $kamar->gambar;
         }
 
-        // Format fasilitas
-        $validated['fasilitas'] = implode(',', $validated['fasilitas']);
+        // Handle fasilitas - only update if provided
+        if (isset($validated['fasilitas'])) {
+            $kamar->fasilitas = implode(',', $validated['fasilitas']);
+            unset($validated['fasilitas']);
+        }
 
+        // Update other fields
         $kamar->update($validated);
+
+        DB::commit();
 
         return redirect()->route('kamar')
             ->with('success', 'Data kamar berhasil diperbarui');
+
     } catch (\Exception $e) {
+        DB::rollBack();
         return back()->withInput()
-            ->with('error', 'Gagal memperbarui: ' . $e->getMessage());
+            ->with('error', 'Gagal memperbarui kamar: ' . $e->getMessage());
     }
 }
+
+
 
 
     public function editKamar($id)
@@ -163,54 +179,91 @@ class AdminController extends Controller
     // Kelola Notifikasi
     public function indexNotifikasi(Request $request)
     {
-        $query = KelolaNotifikasi::query();
+            $query = KelolaNotifikasi::query();
 
-        if ($request->has('search')) {
-            $query->where('judul', 'like', '%'.$request->search.'%')
-                  ->orWhere('pesan', 'like', '%'.$request->search.'%');
+            if ($request->has('search')) {
+                $query->where('judul', 'like', '%'.$request->search.'%')
+                    ->orWhere('pesan', 'like', '%'.$request->search.'%');
+            }
+
+            $notifikasi = $query->paginate(10);
+            return view('admin.notification.main', compact('notifikasi'));
+
         }
 
-        $notifikasi = $query->paginate(10);
-        return view('admin.notification.main', compact('notifikasi'));
-
-    }
-
-
-    // Kelola Pemesanan
     public function indexPemesanan(Request $request)
     {
         $query = KelolaPemesanan::with(['kamar', 'penghuni']);
 
-        if ($request->has('search')) {
-            $query->whereHas('kamar', function($q) use ($request) {
-                    $q->where('no_kamar', 'like', '%'.$request->search.'%');
+        if ($request->has('search') && !empty($request->search)) {
+            $searchTerm = '%'.$request->search.'%';
+
+            $query->where(function($q) use ($searchTerm) {
+                $q->whereHas('kamar', function($kamarQuery) use ($searchTerm) {
+                    $kamarQuery->where('no_kamar', 'like', $searchTerm);
                 })
-                ->orWhereHas('penghuni', function($q) use ($request) {
-                    $q->where('nama', 'like', '%'.$request->search.'%');
+                ->orWhereHas('penghuni', function($penghuniQuery) use ($searchTerm) {
+                    $penghuniQuery->where('name', 'like', $searchTerm)
+                                ->orWhere('nama_lengkap', 'like', $searchTerm);
                 });
+            });
         }
 
         $pemesanan = $query->paginate(10);
-        return view('admin.order.main', compact('pemesanan'));
+
+
+        $penghuni = User::whereIn('role', ['user', 'penghuni'])
+                    ->orderBy('name')
+                    ->get();
+
+
+        $kamars = KelolaKamar::where('status', 'available')
+                        ->orderBy('no_kamar')
+                        ->get();
+
+        return view('admin.order.main', compact('pemesanan', 'penghuni', 'kamars'));
     }
+
 
     public function storePemesanan(Request $request)
     {
         $validated = $request->validate([
+            'penghuni_id' => 'required|exists:users,id',
             'kamar_id' => 'required|exists:kelola_kamar,id',
-            'penghuni_id' => 'required|exists:kelola_penghuni,id',
-            'tanggal_masuk' => 'required|date',
-            'tanggal_keluar' => 'required|date|after:tanggal_masuk',
-            'status' => 'required|in:menunggu,diterima,ditolak',
+            'tanggal_sewa' => 'required|date',
+            'bukti_pembayaran' => 'required|file|mimes:jpg,jpeg,png,pdf|max:10240',
+            'status' => 'required|in:Menunggu,Diterima,Ditolak',
         ]);
 
+        DB::beginTransaction();
         try {
-            KelolaPemesanan::create($validated);
-            return redirect()->route('pemesanan')->with('success', 'Pemesanan berhasil ditambahkan');
+
+            $path = $request->file('bukti_pembayaran')->store('bukti_pembayaran', 'public');
+
+             $pemesanan = KelolaPemesanan::create([
+                'penghuni_id' => $validated['penghuni_id'],
+                'kamar_id' => $validated['kamar_id'],
+                'tanggal_sewa' => $validated['tanggal_sewa'],
+                'bukti_pembayaran' => $path,
+                 'status' => $validated['status'],
+            ]);
+
+
+            KelolaKamar::where('id', $validated['kamar_id'])->update(['status' => 'booked']);
+
+            DB::commit();
+            return redirect()->route('pemesanan')->with('success', 'Pemesanan berhasil disimpan.');
         } catch (\Exception $e) {
-            return back()->withInput()->with('error', 'Gagal menambahkan pemesanan: '.$e->getMessage());
+            DB::rollBack();
+
+            if (isset($path)) {
+                Storage::disk('public')->delete($path);
+            }
+            return back()->withInput()
+                        ->with('error', 'Gagal menyimpan pemesanan: '.$e->getMessage());
         }
     }
+
 
     public function updatePemesanan(Request $request, $id)
     {
@@ -226,7 +279,8 @@ class AdminController extends Controller
 
         try {
             $pemesanan->update($validated);
-            return redirect()->route('pemesanan')->with('success', 'Pemesanan berhasil diperbarui');
+            return redirect()->route('pemesanan.index')->with('success', 'Pemesanan berhasil diperbarui');
+
         } catch (\Exception $e) {
             return back()->withInput()->with('error', 'Gagal memperbarui pemesanan: '.$e->getMessage());
         }
@@ -234,10 +288,21 @@ class AdminController extends Controller
 
     public function destroyPemesanan($id)
     {
+        DB::beginTransaction();
         try {
-            KelolaPemesanan::destroy($id);
-            return redirect()->route('pemesanan')->with('success', 'Pemesanan berhasil dihapus');
+
+            $pemesanan = KelolaPemesanan::findOrFail($id);
+            $kamar_id = $pemesanan->kamar_id;
+
+
+            $pemesanan->delete();
+
+            KelolaKamar::where('id', $kamar_id)->update(['status' => 'available']);
+
+            DB::commit();
+            return redirect()->route('pemesanan')->with('success', 'Pemesanan berhasil dihapus dan kamar tersedia kembali');
         } catch (\Exception $e) {
+            DB::rollBack();
             return back()->with('error', 'Gagal menghapus pemesanan: '.$e->getMessage());
         }
     }
@@ -246,6 +311,7 @@ class AdminController extends Controller
     public function indexPenghuni(Request $request)
     {
         $penghuni = User::where('role', '!=', 'admin')->get();
+
 
         return view('admin.penghuni.main', compact('penghuni'));
     }
