@@ -170,123 +170,26 @@
                             </div>
                         </div>
 
-
-
                         <div class="mb-4">
                             <label class="form-label fw-bold mb-3">Pilih Metode Pembayaran</label>
-
                             <div class="row g-3">
-                                <div class="col-md-6">
-                                    <div class="payment-option active">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="radio" name="paymentMethod"
-                                                id="bankTransfer" checked>
-                                            <label class="form-check-label fw-bold" for="bankTransfer">Transfer
-                                                Bank</label>
-                                        </div>
-                                        <div class="mt-3">
-                                            <div class="d-flex flex-wrap gap-3">
-                                                <div class="form-check">
-                                                    <input class="form-check-input" type="checkbox" id="bca"
-                                                        checked>
-                                                    <label class="form-check-label d-flex align-items-center"
-                                                        for="bca">
-                                                        <img src="https://logo.clearbit.com/bca.co.id" alt="BCA"
-                                                            class="bank-logo">
-                                                        BCA
-                                                    </label>
-                                                </div>
-                                                <div class="form-check">
-                                                    <input class="form-check-input" type="checkbox" id="bri"
-                                                        checked>
-                                                    <label class="form-check-label d-flex align-items-center"
-                                                        for="bri">
-                                                        <img src="https://logo.clearbit.com/bri.co.id" alt="BRI"
-                                                            class="bank-logo">
-                                                        BRI
-                                                    </label>
-                                                </div>
-                                                <div class="form-check">
-                                                    <input class="form-check-input" type="checkbox" id="mandiri"
-                                                        checked>
-                                                    <label class="form-check-label d-flex align-items-center"
-                                                        for="mandiri">
-                                                        <img src="https://logo.clearbit.com/bankmandiri.co.id"
-                                                            alt="Mandiri" class="bank-logo">
-                                                        Mandiri
-                                                    </label>
-                                                </div>
-                                                <div class="form-check">
-                                                    <input class="form-check-input" type="checkbox" id="bni"
-                                                        checked>
-                                                    <label class="form-check-label d-flex align-items-center"
-                                                        for="bni">
-                                                        <img src="https://logo.clearbit.com/bni.co.id" alt="BNI"
-                                                            class="bank-logo">
-                                                        BNI
-                                                    </label>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
                                 <div class="col-md-6">
                                     <div class="payment-option">
                                         <div class="form-check">
                                             <input class="form-check-input" type="radio" name="paymentMethod"
                                                 id="eWallet">
-                                            <label class="form-check-label fw-bold" for="eWallet">E-Wallet</label>
+                                            <label class="form-check-label fw-bold" for="eWallet">Transfer</label>
                                         </div>
-                                        <div class="mt-3">
-                                            <div class="d-flex flex-wrap gap-3">
-                                                <div class="form-check">
-                                                    <input class="form-check-input" type="checkbox" id="gopay">
-                                                    <label class="form-check-label d-flex align-items-center"
-                                                        for="gopay">
-                                                        <img src="https://logo.clearbit.com/gojek.com" alt="Gopay"
-                                                            class="bank-logo">
-                                                        Gopay
-                                                    </label>
-                                                </div>
-                                                <div class="form-check">
-                                                    <input class="form-check-input" type="checkbox" id="dana">
-                                                    <label class="form-check-label d-flex align-items-center"
-                                                        for="dana">
-                                                        <img src="https://logo.clearbit.com/dana.id" alt="DANA"
-                                                            class="bank-logo">
-                                                        DANA
-                                                    </label>
-                                                </div>
-                                                <div class="form-check">
-                                                    <input class="form-check-input" type="checkbox" id="ovo">
-                                                    <label class="form-check-label d-flex align-items-center"
-                                                        for="ovo">
-                                                        <img src="https://logo.clearbit.com/ovo.id" alt="OVO"
-                                                            class="bank-logo">
-                                                        OVO
-                                                    </label>
-                                                </div>
-                                                <div class="form-check">
-                                                    <input class="form-check-input" type="checkbox" id="shopeepay">
-                                                    <label class="form-check-label d-flex align-items-center"
-                                                        for="shopeepay">
-                                                        <img src="https://logo.clearbit.com/shopee.co.id"
-                                                            alt="Shopeepay" class="bank-logo">
-                                                        Shopeepay
-                                                    </label>
-                                                </div>
-                                            </div>
-                                        </div>
+
                                     </div>
                                 </div>
                             </div>
                         </div>
 
                         <div class="d-flex justify-content-between pt-3">
-                            <button class="btn btn-outline-secondary">
+                            <a href="{{ route('user.listroom') }}" class="btn btn-outline-secondary">
                                 <i class="fas fa-times me-2"></i> Batalkan Pembayaran
-                            </button>
+                            </a>
                             <button class="btn btn-primary">
                                 <i class="fas fa-credit-card me-2"></i> Bayar Kamar
                             </button>

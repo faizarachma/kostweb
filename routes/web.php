@@ -32,9 +32,7 @@ Route::get('/admin/login', [AdminAuthController::class, 'showLoginForm'])->name(
 Route::post('/admin/login', [AdminAuthController::class, 'login'])->name('login.admin');
 Route::get('/admin/logout', [AdminAuthController::class, 'logout'])->name('admin.logout');
 
-Route::get('/admin/dashboard', function () {
-    return view('admin.dashboard');
-})->name('dashboard');
+Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
 
 // Room management
 Route::get('/admin/kamar', [AdminController::class, 'indexKamar'])->name('kamar');
@@ -62,4 +60,4 @@ Route::post('/admin/penghuni/store', [AdminController::class, 'storePenghuni'])-
 Route::get('/admin/penghuni/edit/{id}', [AdminController::class, 'editPenghuni'])->name('penghuni.edit');
 Route::post('/admin/penghuni/update/{id}', [AdminController::class, 'updatePenghuni'])->name('penghuni.update');
 
-Route::post('/admin/penghuni/destroy/{id}', [AdminController::class, 'destroyPenghuni'])->name('penghuni.destroy');
+Route::delete('/admin/penghuni/destroy/{id}', [AdminController::class, 'destroyPenghuni'])->name('penghuni.destroy');

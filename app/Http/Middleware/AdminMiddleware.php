@@ -10,8 +10,14 @@ class AdminMiddleware
 {
     public function handle(Request $request, Closure $next)
     {
-        if (!Session::has('admin_id')) {
-            return redirect()->route('admin.login')->withErrors(['access' => 'Silakan login terlebih dahulu']);
+        if (!Auth::check()) {
+            return redirect()->route('admin.login');
+        }
+
+        if (Auth::user()->role !== 'admin') {
+            Auth::logout();
+            return redirect()->route('admin.login')
+                ->withErrors(['username' => 'Akses ditolak. Hanya admin yang diizinkan.']);
         }
 
         return $next($request);

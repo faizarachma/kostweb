@@ -40,8 +40,8 @@
                                 class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-medium">Lunas</span>
                         </td>
                         <td class="px-6 py-4 space-x-2">
-                            @include('admin.penghuni.edit-penghuni')
-                            @include('admin.penghuni.hapus-penghuni')
+                            {{-- @include('admin.penghuni.edit-penghuni')
+                            @include('admin.penghuni.hapus-penghuni') --}}
                         </td>
                     </tr>
                     <!-- Baris lainnya -->

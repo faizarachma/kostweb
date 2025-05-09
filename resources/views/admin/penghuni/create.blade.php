@@ -14,7 +14,6 @@
         <form id="tambahPenghuniForm" action="{{ route('penghuni.store') }}" method="POST" enctype="multipart/form-data"
             class="space-y-4">
             @csrf
-
             <div>
                 <label for="nama_lengkap" class="block text-sm font-medium text-gray-700">Nama Lengkap</label>
                 <input type="text" name="nama_lengkap" id="nama_lengkap" required value="{{ old('nama_lengkap') }}"
@@ -79,13 +78,20 @@
             const modal = document.getElementById('tambahPenghuniModal'); // Modal ID for Penghuni
 
             if (addPenghuniBtn && modal && closeModalBtn) {
+                console.log('Elements found, attaching event listeners.');
+
                 addPenghuniBtn.addEventListener('click', function() {
+                    console.log('Add Penghuni button clicked');
                     modal.classList.remove('hidden'); // Show modal
                 });
 
                 closeModalBtn.addEventListener('click', function() {
-                    modal.classList.add('hidden'); // Hide modal
+                    console.log('Close Modal button clicked');
+                    modal.classList.add('hidden');
+                    form.reset();
                 });
+            } else {
+                console.log('Elements not found');
             }
         });
     </script>

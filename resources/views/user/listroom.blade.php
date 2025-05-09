@@ -48,7 +48,8 @@
         <div class="card mb-5">
             <div class="card-body">
                 <form class="row g-3">
-                    <div class="col-md-4">
+                    <!-- Kolom Ketersediaan (50%) -->
+                    <div class="col-md-6">
                         <label for="roomType" class="form-label">Ketersediaan</label>
                         <select class="form-select" id="roomType">
                             <option selected>Semua Kamar</option>
@@ -56,14 +57,14 @@
                             <option>Tidak Tersedia</option>
                         </select>
                     </div>
-                    <div class="col-md-4">
+
+                    <!-- Kolom Harga (50%) -->
+                    <div class="col-md-6">
                         <label for="priceRange" class="form-label">Harga Maksimal</label>
-                        <input type="number" class="form-control" id="priceRange" placeholder="Contoh: 1500000">
-                    </div>
-                    <div class="col-md-4 d-flex align-items-end">
-                        <button type="submit" class="btn btn-primary w-100">
-                            <i class="fas fa-filter me-2"></i>Filter
-                        </button>
+                        <div class="input-group">
+                            <input type="number" class="form-control" id="priceRange" placeholder="Contoh: 1500000">
+                            <span class="input-group-text">/bulan</span>
+                        </div>
                     </div>
                 </form>
             </div>
@@ -111,10 +112,10 @@
                                 </div>
                             </div>
 
-                            <a href="{{ $kamar->status == 'booked' ? '#' : '/kosan/' . $kamar->id }}"
+                            <a href="{{ $kamar->status == 'booked' ? '#' : route('user.detailroom', $kamar->id) }}"
                                 class="btn mt-auto
-                                {{ $kamar->status == 'available' ? 'btn-success' : 'btn-secondary' }}
-                                {{ $kamar->status == 'booked' ? 'cursor-not-allowed opacity-50' : '' }}"
+                                        {{ $kamar->status == 'available' ? 'btn-success' : 'btn-secondary' }}
+                                        {{ $kamar->status == 'booked' ? 'cursor-not-allowed opacity-50' : '' }}"
                                 id="kamar-{{ $kamar->id }}"
                                 {{ $kamar->status == 'booked' ? 'onclick="event.preventDefault();"' : '' }}>
                                 <i class="fas fa-eye me-2"></i>Lihat Detail
@@ -126,19 +127,59 @@
             @endforeach
         </div>
         <!-- Pagination -->
-        <nav aria-label="Page navigation example" class="mt-5">
-            <ul class="pagination justify-content-center">
-                <li class="page-item disabled">
-                    <a class="page-link" href="#" tabindex="-1">Sebelumnya</a>
-                </li>
-                <li class="page-item"><a class="page-link" href="#">1</a></li>
-                <li class="page-item"><a class="page-link" href="#">2</a></li>
-                <li class="page-item"><a class="page-link" href="#">3</a></li>
-                <li class="page-item">
-                    <a class="page-link" href="#">Selanjutnya</a>
-                </li>
-            </ul>
-        </nav>
+        <!-- Pagination -->
+        @if (method_exists($rooms, 'lastPage') && $rooms->lastPage() > 1)
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center">
+                    {{-- Previous Page Link --}}
+                    @if ($rooms->onFirstPage())
+                        <li class="page-item disabled"><span class="page-link">&laquo;</span></li>
+                    @else
+                        <li class="page-item"><a class="page-link" href="{{ $rooms->previousPageUrl() }}"
+                                rel="prev">&laquo;</a></li>
+                    @endif
+
+                    {{-- Pagination Elements --}}
+                    @php
+                        $start = max($rooms->currentPage() - 2, 1);
+                        $end = min($start + 4, $rooms->lastPage());
+
+                        if ($end - $start < 4) {
+                            $start = max($end - 4, 1);
+                        }
+                    @endphp
+
+                    @if ($start > 1)
+                        <li class="page-item"><a class="page-link" href="{{ $rooms->url(1) }}">1</a></li>
+                        @if ($start > 2)
+                            <li class="page-item disabled"><span class="page-link">...</span></li>
+                        @endif
+                    @endif
+
+                    @for ($i = $start; $i <= $end; $i++)
+                        <li class="page-item {{ $rooms->currentPage() == $i ? 'active' : '' }}">
+                            <a class="page-link" href="{{ $rooms->url($i) }}">{{ $i }}</a>
+                        </li>
+                    @endfor
+
+                    @if ($end < $rooms->lastPage())
+                        @if ($end < $rooms->lastPage() - 1)
+                            <li class="page-item disabled"><span class="page-link">...</span></li>
+                        @endif
+                        <li class="page-item"><a class="page-link"
+                                href="{{ $rooms->url($rooms->lastPage()) }}">{{ $rooms->lastPage() }}</a></li>
+                    @endif
+
+                    {{-- Next Page Link --}}
+                    @if ($rooms->hasMorePages())
+                        <li class="page-item"><a class="page-link" href="{{ $rooms->nextPageUrl() }}"
+                                rel="next">&raquo;</a></li>
+                    @else
+                        <li class="page-item disabled"><span class="page-link">&raquo;</span></li>
+                    @endif
+                </ul>
+            </nav>
+        @endif
         <!-- Back Button -->
         <div class="text-center mt-4">
             <a href="{{ route('user.home') }}" class="btn btn-secondary">
@@ -161,6 +202,63 @@
                     // Cegah link di-click
                     button.addEventListener('click', function(event) {
                         event.preventDefault(); // Cegah aksi klik
+                        alert('Kamar sudah dibooking!');
+                    });
+                }
+            });
+        });
+
+
+        document.addEventListener("DOMContentLoaded", function() {
+            // Fungsi untuk memfilter kamar
+            function filterRooms() {
+                const availabilityFilter = document.getElementById('roomType').value;
+                const maxPrice = document.getElementById('priceRange').value;
+                const roomCards = document.querySelectorAll('.col-md-4.mb-4');
+
+                roomCards.forEach(card => {
+                    const statusBadge = card.querySelector('.badge');
+                    const priceText = card.querySelector('.text-success').textContent;
+                    const price = parseInt(priceText.replace(/[^\d]/g, ''));
+
+                    // Filter berdasarkan ketersediaan
+                    const availabilityMatch =
+                        availabilityFilter === 'Semua Kamar' ||
+                        (availabilityFilter === 'Tersedia' && statusBadge.textContent.trim() ===
+                            'Tersedia') ||
+                        (availabilityFilter === 'Tidak Tersedia' && statusBadge.textContent.trim() ===
+                            'Booked');
+
+                    // Filter berdasarkan harga
+                    const priceMatch = !maxPrice || price <= parseInt(maxPrice);
+
+                    // Tampilkan atau sembunyikan card berdasarkan filter
+                    if (availabilityMatch && priceMatch) {
+                        card.style.display = 'block';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            }
+
+            // Event listener untuk form filter
+            document.querySelector('form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                filterRooms();
+            });
+
+            // Event listener untuk perubahan select box (opsional)
+            document.getElementById('roomType').addEventListener('change', filterRooms);
+
+            // Event listener untuk input harga (opsional)
+            document.getElementById('priceRange').addEventListener('input', filterRooms);
+
+            // Fungsi untuk menangani kamar yang sudah dibooking
+            const kamarButtons = document.querySelectorAll('.btn');
+            kamarButtons.forEach(button => {
+                if (button.classList.contains('cursor-not-allowed')) {
+                    button.addEventListener('click', function(event) {
+                        event.preventDefault();
                         alert('Kamar sudah dibooking!');
                     });
                 }

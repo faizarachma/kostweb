@@ -11,4 +11,8 @@ class KelolaKamar extends Model
 
     protected $table = 'kelola_kamar';
     protected $fillable = ['no_kamar', 'harga', 'deskripsi_kamar', 'fasilitas', 'gambar', 'status'];
+
+    protected $casts = [
+        'fasilitas' => 'array',
+    ];
 }

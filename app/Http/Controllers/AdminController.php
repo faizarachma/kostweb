@@ -13,15 +13,37 @@ use Illuminate\Support\Str;
 
 
 
+
 use Illuminate\Pagination\Paginator;
 
 class AdminController extends Controller
 {
-    // Dashboard
+
+
     public function dashboard()
     {
-        return view('admin.dashboard');
+        $totalRooms = KelolaKamar::count();
+        $occupiedRooms = KelolaKamar::where('status', 'terisi')->count();
+        $availableRooms = KelolaKamar::where('status', 'tersedia')->count();
+        $maintenanceRooms = KelolaKamar::where('status', 'perawatan')->count();
+
+        $availabilityPercentage = $totalRooms > 0
+            ? round(($availableRooms / $totalRooms) * 100)
+            : 0;
+
+        $recentActivities = KelolaKamar::latest()->take(10)->get();
+
+        return view('admin.dashboard', compact(
+            'totalRooms',
+            'occupiedRooms',
+            'availableRooms',
+            'maintenanceRooms',
+            'availabilityPercentage',
+            'recentActivities'
+        ));
+
     }
+
 
     // Kelola Kamar
     public function indexKamar(Request $request)
@@ -72,42 +94,45 @@ class AdminController extends Controller
     }
 
 
-    public function updateKamar(Request $request, $id)
-    {
-        $validated = $request->validate([
-            'no_kamar' => 'required|unique:kelola_kamar,no_kamar,' . $id,
-            'harga' => 'required|numeric|min:100000', // Minimum Rp100.000
-            'deskripsi_kamar' => 'required|string|max:500',
-            'fasilitas' => 'required|array|min:1',
-            'fasilitas.*' => 'string|in:AC,WiFi,TV,Kulkas,kipas',
-            'gambar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // tambahkan gif agar konsisten
-            'status' => 'required|in:available,booked',
-        ]);
+   public function updateKamar(Request $request, $id)
+{
+    $validated = $request->validate([
+        'no_kamar' => 'required|unique:kelola_kamar,no_kamar,' . $id,
+        'harga' => 'required|numeric|min:100000',
+        'deskripsi_kamar' => 'required|string|max:500',
+        'fasilitas' => 'required|array|min:1',
+        'fasilitas.*' => 'string|in:AC,WiFi,TV,Kulkas,kipas',
+        'gambar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+        'status' => 'required|in:available,booked',
+    ]);
 
-        try {
-             $kamar = KelolaKamar::findOrFail($id); // Ambil SATU data, bukan paginate
+    try {
+        $kamar = KelolaKamar::findOrFail($id);
 
-            // Jika ada gambar baru
-            if ($request->hasFile('gambar')) {
-                if ($kamar->gambar && Storage::disk('public')->exists($kamar->gambar)) {
-                    Storage::disk('public')->delete($kamar->gambar);
-                }
-
-                $validated['gambar'] = $request->file('gambar')->store('kamar', 'public');
+        // Handle gambar
+        if ($request->hasFile('gambar')) {
+            // Hapus gambar lama jika ada
+            if ($kamar->gambar && Storage::disk('public')->exists($kamar->gambar)) {
+                Storage::disk('public')->delete($kamar->gambar);
             }
-
-            // Konversi fasilitas ke string unik
-            $validated['fasilitas'] = implode(', ', array_unique($validated['fasilitas']));
-
-            $kamar->update($validated);
-
-            return redirect()->route('kamar')
-                ->with('success', 'Data kamar berhasil diperbarui');
-        } catch (\Exception $e) {
-            return back()->withInput()
-                ->with('error', 'Gagal memperbarui: ' . $e->getMessage());
+            $validated['gambar'] = $request->file('gambar')->store('kamar', 'public');
+        } else {
+            // Pertahankan gambar lama jika tidak ada gambar baru
+            $validated['gambar'] = $kamar->gambar;
         }
+
+        // Format fasilitas
+        $validated['fasilitas'] = implode(',', $validated['fasilitas']);
+
+        $kamar->update($validated);
+
+        return redirect()->route('kamar')
+            ->with('success', 'Data kamar berhasil diperbarui');
+    } catch (\Exception $e) {
+        return back()->withInput()
+            ->with('error', 'Gagal memperbarui: ' . $e->getMessage());
     }
+}
 
 
     public function editKamar($id)
@@ -266,24 +291,68 @@ class AdminController extends Controller
     }
 
 
-
-
-    public function destroyPenghuni($id)
+   public function updatePenghuni(Request $request, $id)
     {
-        try {
-            $penghuni = KelolaPenghuni::findOrFail($id);
+        // Validasi input
+        $validated = $request->validate([
+            'nama_lengkap'   => 'required|string|max:255',
+            'email'          => 'required|email|unique:users,email,' . $id,
+            'no_hp'          => 'required|string|max:20|unique:users,no_hp,' . $id,
+            'tanggal_lahir'  => 'required|date',
+            'alamat'         => 'required|string',
+        ], [
+            'email.unique'  => 'Email sudah terdaftar. Gunakan email lain.',
+            'no_hp.unique'  => 'Nomor HP sudah digunakan. Gunakan nomor lain.',
+        ]);
 
-            // Hapus foto KTP terkait
-            if ($penghuni->foto_ktp) {
-                Storage::disk('public')->delete($penghuni->foto_ktp);
+        try {
+            // Ambil data pengguna yang akan diupdate
+            $user = User::findOrFail($id);
+
+            // Generate username unik jika nama lengkap diubah
+            if ($user->name !== $validated['nama_lengkap']) {
+                do {
+                    $username = Str::slug($validated['nama_lengkap']) . rand(100, 999);
+                } while (User::where('username', $username)->exists());
+
+                $user->username = $username;
             }
 
-            $penghuni->delete();
-            return redirect()->route('penghuni')->with('success', 'Penghuni berhasil dihapus');
+            // Perbarui data penghuni
+            $user->update([
+                'name'           => $validated['nama_lengkap'],
+                'email'          => $validated['email'],
+                'no_hp'          => $validated['no_hp'],
+                'tanggal_lahir'  => $validated['tanggal_lahir'],
+                'alamat'         => $validated['alamat'],
+            ]);
+
+            return redirect()->route('users.index')->with('success', 'Penghuni berhasil diperbarui.');
         } catch (\Exception $e) {
-            return back()->with('error', 'Gagal menghapus penghuni: '.$e->getMessage());
+            return back()->withInput()->with('error', 'Gagal memperbarui penghuni: ' . $e->getMessage());
         }
     }
+
+public function destroyPenghuni($id)
+{
+    try {
+        // Cari user berdasarkan ID
+        $user = User::findOrFail($id);
+
+        // Hapus user
+        $user->delete();
+
+        // Redirect ke halaman users dengan pesan sukses
+        return redirect()->route('users.index')->with('success', 'Penghuni berhasil dihapus.');
+    } catch (\Exception $e) {
+        // Kembali dengan pesan error jika ada masalah
+        return back()->with('error', 'Gagal menghapus penghuni: ' . $e->getMessage());
+    }
+}
+
+
+
+
 
 
 }

@@ -83,8 +83,8 @@ class AuthController extends Controller
 
     public function listRoom()
     {
-        // Fetch the list of rooms from the database
-        $rooms = KelolaKamar::all(); // Assuming you have a Room model
+
+        $rooms = KelolaKamar::paginate(10);
 
         return view('user.listroom', compact('rooms'));
 
@@ -92,8 +92,8 @@ class AuthController extends Controller
 
     public function detailRoom($id)
     {
-        // Fetch the room details by ID
-        $room = KelolaKamar::findOrFail($id); // Assuming you have a Room model
+
+        $room = KelolaKamar::findOrFail($id);
 
         return view('user.detailroom', compact('room'));
     }
@@ -115,7 +115,7 @@ class AuthController extends Controller
         return view('user.booking', compact('room'));
     }
 
-    
+
 
 
     public function logout()
