@@ -20,20 +20,25 @@ use Illuminate\Pagination\Paginator;
 class AdminController extends Controller
 {
 
-
     public function dashboard()
     {
+        // Menghitung total jumlah kamar
         $totalRooms = KelolaKamar::count();
-        $occupiedRooms = KelolaKamar::where('status', 'terisi')->count();
-        $availableRooms = KelolaKamar::where('status', 'tersedia')->count();
-        $maintenanceRooms = KelolaKamar::where('status', 'perawatan')->count();
 
+        // Menghitung jumlah kamar dengan status yang sesuai
+        $occupiedRooms = KelolaKamar::where('status', 'booked')->count();
+        $availableRooms = KelolaKamar::where('status', 'available')->count();
+        $maintenanceRooms = KelolaKamar::where('status', 'maintenance')->count();
+
+        // Menghitung persentase kamar tersedia
         $availabilityPercentage = $totalRooms > 0
             ? round(($availableRooms / $totalRooms) * 100)
             : 0;
 
+        // Mengambil 10 aktivitas terbaru
         $recentActivities = KelolaKamar::latest()->take(10)->get();
 
+        // Menampilkan data ke view
         return view('admin.dashboard', compact(
             'totalRooms',
             'occupiedRooms',
@@ -42,21 +47,26 @@ class AdminController extends Controller
             'availabilityPercentage',
             'recentActivities'
         ));
-
     }
-
 
     // Kelola Kamar
     public function indexKamar(Request $request)
     {
         $query = KelolaKamar::query();
 
-        if ($request->has('search')) {
-            $query->where('no_kamar', 'like', '%'.$request->search.'%')
-                  ->orWhere('deskripsi_kamar', 'like', '%'.$request->search.'%');
+        if ($request->filled('search')) {
+            $query->where(function ($q) use ($request) {
+                $q->where('no_kamar', 'like', '%' . $request->search . '%')
+                  ->orWhere('deskripsi_kamar', 'like', '%' . $request->search . '%');
+            });
+        }
+
+        if ($request->filled('availability')) {
+            $query->where('status', $request->availability);
         }
 
         $kamar = $query->paginate(10);
+
         return view('admin.room.main', compact('kamar'));
     }
 
@@ -102,51 +112,51 @@ class AdminController extends Controller
 
 
     public function updateKamar(Request $request, $id)
-{
-    // Validate the request data with more flexible rules
-    $validated = $request->validate([
-        'no_kamar' => 'required|unique:kelola_kamar,no_kamar,' . $id,
-        'harga' => 'required|numeric|min:100000',
-        'deskripsi_kamar' => 'required|string|max:500',
-        'fasilitas' => 'nullable|array', // Changed to nullable
-        'fasilitas.*' => 'string|in:AC,WiFi,TV,Kulkas,kipas',
-        'gambar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-        'status' => 'required|in:available,booked', // Added maintenance option
-    ]);
+    {
+        // Validate the request data with more flexible rules
+        $validated = $request->validate([
+            'no_kamar' => 'required|unique:kelola_kamar,no_kamar,' . $id,
+            'harga' => 'required|numeric|min:100000',
+            'deskripsi_kamar' => 'required|string|max:500',
+            'fasilitas' => 'nullable|array', // Changed to nullable
+            'fasilitas.*' => 'string|in:AC,WiFi,TV,Kulkas,kipas',
+            'gambar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'status' => 'required|in:available,booked', // Added maintenance option
+        ]);
 
-    DB::beginTransaction();
-    try {
-        $kamar = KelolaKamar::findOrFail($id);
+        DB::beginTransaction();
+        try {
+            $kamar = KelolaKamar::findOrFail($id);
 
-        // Handle image upload
-        if ($request->hasFile('gambar')) {
-            // Delete old image if exists
-            if ($kamar->gambar) {
-                Storage::disk('public')->delete($kamar->gambar);
+            // Handle image upload
+            if ($request->hasFile('gambar')) {
+                // Delete old image if exists
+                if ($kamar->gambar) {
+                    Storage::disk('public')->delete($kamar->gambar);
+                }
+                $validated['gambar'] = $request->file('gambar')->store('kamar', 'public');
             }
-            $validated['gambar'] = $request->file('gambar')->store('kamar', 'public');
+
+            // Handle fasilitas - only update if provided
+            if (isset($validated['fasilitas'])) {
+                $kamar->fasilitas = implode(',', $validated['fasilitas']);
+                unset($validated['fasilitas']);
+            }
+
+            // Update other fields
+            $kamar->update($validated);
+
+            DB::commit();
+
+            return redirect()->route('kamar')
+                ->with('success', 'Data kamar berhasil diperbarui');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->withInput()
+                ->with('error', 'Gagal memperbarui kamar: ' . $e->getMessage());
         }
-
-        // Handle fasilitas - only update if provided
-        if (isset($validated['fasilitas'])) {
-            $kamar->fasilitas = implode(',', $validated['fasilitas']);
-            unset($validated['fasilitas']);
-        }
-
-        // Update other fields
-        $kamar->update($validated);
-
-        DB::commit();
-
-        return redirect()->route('kamar')
-            ->with('success', 'Data kamar berhasil diperbarui');
-
-    } catch (\Exception $e) {
-        DB::rollBack();
-        return back()->withInput()
-            ->with('error', 'Gagal memperbarui kamar: ' . $e->getMessage());
     }
-}
 
 
 
@@ -189,40 +199,46 @@ class AdminController extends Controller
             $notifikasi = $query->paginate(10);
             return view('admin.notification.main', compact('notifikasi'));
 
-        }
+    }
 
     public function indexPemesanan(Request $request)
     {
         $query = KelolaPemesanan::with(['kamar', 'penghuni']);
 
+        // Filter pencarian
         if ($request->has('search') && !empty($request->search)) {
-            $searchTerm = '%'.$request->search.'%';
+            $searchTerm = '%' . $request->search . '%';
 
-            $query->where(function($q) use ($searchTerm) {
-                $q->whereHas('kamar', function($kamarQuery) use ($searchTerm) {
+            $query->where(function ($q) use ($searchTerm) {
+                $q->whereHas('kamar', function ($kamarQuery) use ($searchTerm) {
                     $kamarQuery->where('no_kamar', 'like', $searchTerm);
-                })
-                ->orWhereHas('penghuni', function($penghuniQuery) use ($searchTerm) {
-                    $penghuniQuery->where('name', 'like', $searchTerm)
-                                ->orWhere('nama_lengkap', 'like', $searchTerm);
+                })->orWhereHas('penghuni', function ($penghuniQuery) use ($searchTerm) {
+                    $penghuniQuery->where('name', 'like', $searchTerm);
+                    // Hapus ini jika kolom tidak ada:
+                    // ->orWhere('nama_lengkap', 'like', $searchTerm);
                 });
             });
         }
 
-        $pemesanan = $query->paginate(10);
+        // Filter tanggal sewa
+        if ($request->filled('start_date') && $request->filled('end_date')) {
+            $query->whereBetween('tanggal_sewa', [$request->start_date, $request->end_date]);
+        }
 
+        $pemesanan = $query->orderBy('created_at', 'desc')->paginate(10);
 
         $penghuni = User::whereIn('role', ['user', 'penghuni'])
                     ->orderBy('name')
                     ->get();
 
-
         $kamars = KelolaKamar::where('status', 'available')
-                        ->orderBy('no_kamar')
-                        ->get();
+                    ->orderBy('no_kamar')
+                    ->get();
 
         return view('admin.order.main', compact('pemesanan', 'penghuni', 'kamars'));
     }
+
+
 
 
     public function storePemesanan(Request $request)
@@ -307,11 +323,19 @@ class AdminController extends Controller
         }
     }
 
-    // Kelola Penghuni
     public function indexPenghuni(Request $request)
     {
-        $penghuni = User::where('role', '!=', 'admin')->get();
+        $search = $request->input('search');
 
+        $penghuni = User::where('role', '!=', 'admin')
+                    ->when($search, function($query) use ($search) {
+                        return $query->where(function($q) use ($search) {
+                            $q->where('name', 'like', '%'.$search.'%')
+                              ->orWhere('no_hp', 'like', '%'.$search.'%');
+                        });
+                    })
+                    ->orderBy('created_at', 'desc')
+                    ->paginate(10); // 10 item per halaman
 
         return view('admin.penghuni.main', compact('penghuni'));
     }
@@ -399,26 +423,22 @@ class AdminController extends Controller
         }
     }
 
-public function destroyPenghuni($id)
-{
-    try {
-        // Cari user berdasarkan ID
-        $user = User::findOrFail($id);
+    public function destroyPenghuni($id)
+    {
+        try {
+            // Cari user berdasarkan ID
+            $user = User::findOrFail($id);
 
-        // Hapus user
-        $user->delete();
+            // Hapus user
+            $user->delete();
 
-        // Redirect ke halaman users dengan pesan sukses
-        return redirect()->route('users.index')->with('success', 'Penghuni berhasil dihapus.');
-    } catch (\Exception $e) {
-        // Kembali dengan pesan error jika ada masalah
-        return back()->with('error', 'Gagal menghapus penghuni: ' . $e->getMessage());
+            // Redirect ke halaman users dengan pesan sukses
+            return redirect()->route('users.index')->with('success', 'Penghuni berhasil dihapus.');
+        } catch (\Exception $e) {
+            // Kembali dengan pesan error jika ada masalah
+            return back()->with('error', 'Gagal menghapus penghuni: ' . $e->getMessage());
+        }
     }
-}
-
-
-
-
 
 
 }

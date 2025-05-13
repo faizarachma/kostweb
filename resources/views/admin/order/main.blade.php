@@ -4,11 +4,40 @@
 
 @section('content')
 
-    @include('admin.layouts.header')
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 w-full">
+        <!-- Tombol buka modal filter -->
+        <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full sm:w-auto">
+            @include('admin.layouts.filter')
+            <!-- Search Form (Left) -->
+            <div class=" w-full sm:w-64">
+                <form action="" method="GET" class="relative">
+                    <div class="flex shadow-sm">
+                        <input type="text" name="search" placeholder="Cari penghuni..." value="{{ request('search') }}"
+                            class="w-full px-4 py-2 text-sm rounded-full border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition duration-200">
+                        <button type="submit"
+                            class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-full ml-2 transition duration-200 flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                            <span class="sr-only">Cari</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+        </div>
+
+        <!-- Header (Right) -->
+        <div class="w-full sm:w-auto flex justify-end">
+            @include('admin.layouts.header')
+        </div>
+    </div>
 
     @include('admin.order.create-order')
 
-    <div class="bg-white p-6 rounded-xl shadow-lg mt-10">
+    <div class="bg-white p-6 rounded-xl shadow-lg mt-5">
         <div class="overflow-auto max-h-[70vh] rounded-lg">
             <table class="min-w-full table-auto border-collapse text-sm text-gray-700">
                 <thead class="sticky top-0 z-10 bg-gradient-to-r from-gray-100 to-gray-200 shadow-sm">
@@ -23,7 +52,8 @@
                             Tanggal Sewa</th>
                         <th class="px-6 py-3 text-left font-semibold tracking-wide uppercase border-b border-gray-300">Bukti
                             Pembayaran</th>
-                        <th class="px-6 py-3 text-left font-semibold tracking-wide uppercase border-b border-gray-300">Status
+                        <th class="px-6 py-3 text-left font-semibold tracking-wide uppercase border-b border-gray-300">
+                            Status
                         </th>
                         <th class="px-6 py-3 text-left font-semibold tracking-wide uppercase border-b border-gray-300">Aksi
                         </th>

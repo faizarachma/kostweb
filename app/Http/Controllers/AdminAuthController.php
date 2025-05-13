@@ -44,10 +44,16 @@ class AdminAuthController extends Controller
 
 
 
-    public function logout()
+    public function logout(Request $request)
     {
         Auth::logout();
-        return redirect()->route('auth.admin.login')->with('success', 'Logout berhasil.');
+
+        // Menghapus seluruh sesi
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect()->route('admin.login')->with('success', 'Logout berhasil.');
     }
+
 
 }

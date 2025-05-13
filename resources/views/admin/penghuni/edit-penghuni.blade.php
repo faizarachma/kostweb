@@ -50,8 +50,8 @@
             <div class="flex justify-end space-x-2">
                 <button type="button" onclick="closeEditModal()"
                     class="bg-gray-300 text-gray-700 px-4 py-2 rounded-full hover:bg-gray-400">Batal</button>
-                <button type="submit"
-                    class="bg-blue-500 text-white px-4 py-2 rounded-full hover:bg-blue-700">Update</button>
+                <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-full hover:bg-blue-700">Simpan
+                    Perubahan</button>
             </div>
         </form>
     </div>

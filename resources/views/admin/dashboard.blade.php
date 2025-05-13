@@ -143,15 +143,30 @@
                             {{ $occupiedRooms }},
                             {{ $maintenanceRooms }}
                         ],
-                        backgroundColor: ['#10B981', '#EF4444', '#F59E0B'],
-                        borderWidth: 1
+                        backgroundColor: [
+                            'rgba(16, 185, 129, 0.8)', // Tersedia (Green)
+                            'rgba(239, 68, 68, 0.8)', // Terisi (Red)
+                            'rgba(245, 158, 11, 0.8)' // Perawatan (Yellow)
+                        ],
+                        borderColor: [
+                            'rgba(16, 185, 129, 1)', // Green border
+                            'rgba(239, 68, 68, 1)', // Red border
+                            'rgba(245, 158, 11, 1)' // Yellow border
+                        ],
+                        borderWidth: 2
                     }]
                 },
                 options: {
                     responsive: true,
                     plugins: {
                         legend: {
-                            position: 'bottom'
+                            position: 'bottom',
+                            labels: {
+                                font: {
+                                    size: 14,
+                                    weight: 'bold'
+                                }
+                            }
                         },
                         tooltip: {
                             callbacks: {
@@ -177,18 +192,18 @@
                     datasets: [{
                             label: 'Pendapatan',
                             data: [15, 18, 22, 25, 28, 30, 32, 35, 38, 40, 42, 45],
-                            borderColor: 'rgb(59, 130, 246)',
-                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                            borderWidth: 3,
+                            borderColor: 'rgba(59, 130, 246, 1)', // Blue
+                            backgroundColor: 'rgba(59, 130, 246, 0.2)', // Soft blue fill
+                            borderWidth: 4,
                             tension: 0.3,
                             fill: true
                         },
                         {
                             label: 'Biaya',
                             data: [10, 12, 15, 18, 20, 22, 25, 23, 20, 22, 25, 28],
-                            borderColor: 'rgb(239, 68, 68)',
-                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                            borderWidth: 3,
+                            borderColor: 'rgba(239, 68, 68, 1)', // Red
+                            backgroundColor: 'rgba(239, 68, 68, 0.2)', // Soft red fill
+                            borderWidth: 4,
                             tension: 0.3,
                             fill: true
                         }
@@ -217,6 +232,16 @@
                                 callback: function(value) {
                                     return value + ' JT';
                                 }
+                            },
+                            grid: {
+                                borderColor: 'rgba(0,0,0,0.1)',
+                                borderWidth: 1
+                            }
+                        },
+                        x: {
+                            grid: {
+                                borderColor: 'rgba(0,0,0,0.1)',
+                                borderWidth: 1
                             }
                         }
                     },

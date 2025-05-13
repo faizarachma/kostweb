@@ -4,9 +4,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pembayaran Kamar No. X</title>
+    <title>Pembayaran Kamar</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <style>
         :root {
             --primary-color: #2e7d32;
@@ -107,6 +108,36 @@
             border-color: var(--accent-color);
             box-shadow: 0 0 0 0.25rem rgba(76, 175, 80, 0.25);
         }
+
+        /* Tambahan untuk responsif */
+        @media (max-width: 576px) {
+            .room-number {
+                font-size: 2rem;
+            }
+
+            .total-cost {
+                font-size: 1.5rem;
+            }
+        }
+
+        /* Payment Instruction Styles */
+        .payment-instruction {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .bank-account {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 10px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
     </style>
 </head>
 
@@ -114,17 +145,62 @@
     <div class="container py-5">
         <div class="row justify-content-center">
             <div class="col-lg-8">
-                <div class="card">
+                <form id="bookingForm" method="POST" action="{{ route('user.booking') }}"
+                    enctype="multipart/form-data">
+                    @csrf
+                    <input type="hidden" name="room_id" value="{{ $room->id }}">
+
                     <div class="card-header text-center">
-                        <h1 class="room-number mb-0">Kamar No. X</h1>
-                        <p class="mb-0">Kost Laimiya</p>
+                        <h1 class="room-number mb-0">
+                            Kamar No. <span id="roomNumber">{{ $room->no_kamar ?? 'N/A' }}</span>
+                        </h1>
+                        <p class="mb-0">Kost Alifia</p>
                     </div>
 
-                    <!-- Added Room Image -->
-                    <img src="https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80"
-                        class="room-image" alt="Kamar Kost">
+                    <img src="{{ $photoUrl }}" class="room-image" alt="Kamar Kost {{ $room->no_kamar ?? '' }}"
+                        onerror="this.onerror=null;this.src='https://via.placeholder.com/800x500?text=Image+Not+Found'">
 
                     <div class="card-body p-4">
+                        <!-- Data Pemesan Section -->
+                        <div class="mb-4">
+                            <h5 class="mb-3" style="color: var(--primary-color);">
+                                <i class="fas fa-user-circle me-2"></i> Data Pemesan
+                            </h5>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="nama" class="form-label">Nama Lengkap</label>
+                                        <input type="text" class="form-control" id="nama" name="nama"
+                                            value="{{ Auth::user()->name }}" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="email" class="form-label">Email</label>
+                                        <input type="email" class="form-control" id="email" name="email"
+                                            value="{{ Auth::user()->email }}" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="no_hp" class="form-label">No. HP/WhatsApp</label>
+                                        <input type="tel" class="form-control" id="no_hp" name="no_hp"
+                                            value="{{ Auth::user()->no_hp ?? '' }}" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="col-12">
+                                        <div class="form-group">
+                                            <label for="alamat" class="form-label">Alamat Lengkap</label>
+                                            <textarea class="form-control" id="alamat" name="alamat" rows="2" required>{{ Auth::user()->alamat ?? '' }}</textarea>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <!-- Existing Room Info Section -->
                         <div class="row mb-4">
                             <div class="col-md-6">
                                 <div class="d-flex align-items-center mb-3">
@@ -132,7 +208,7 @@
                                         style="color: var(--primary-color); font-size: 1.25rem;"></i>
                                     <div>
                                         <p class="mb-0 text-muted small">Jumlah Penghuni</p>
-                                        <h5 class="mb-0">2 Orang</h5>
+                                        <h5 class="mb-0">1 Orang</h5>
                                     </div>
                                 </div>
                             </div>
@@ -142,83 +218,105 @@
                                         style="color: var(--primary-color); font-size: 1.25rem;"></i>
                                     <div>
                                         <p class="mb-0 text-muted small">Tanggal Mulai Sewa</p>
-                                        <h5 class="mb-0">15 Januari 2024</h5>
+                                        <input type="text" class="form-control datepicker" id="startDate"
+                                            name="start_date" required>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="mb-4">
-                            <label class="form-label fw-bold">Durasi Sewa</label>
-                            <div class="d-flex gap-3">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="duration" id="weekly"
-                                        checked>
-                                    <label class="form-check-label" for="weekly">Perminggu</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="duration" id="monthly">
-                                    <label class="form-check-label" for="monthly">Perbulan</label>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="mb-4 p-4 bg-light rounded-3" style="background-color: var(--light-green);">
+                        <div class="mb-4 p-4 rounded-3" style="background-color: var(--light-green);">
                             <div class="d-flex justify-content-between align-items-center">
-                                <h5 class="mb-0">Total Biaya:</h5>
-                                <div class="total-cost">Rp 1.500.000</div>
-                            </div>
-                        </div>
-
-                        <div class="mb-4">
-                            <label class="form-label fw-bold mb-3">Pilih Metode Pembayaran</label>
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <div class="payment-option">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="radio" name="paymentMethod"
-                                                id="eWallet">
-                                            <label class="form-check-label fw-bold" for="eWallet">Transfer</label>
-                                        </div>
-
-                                    </div>
+                                <div>
+                                    <h5 class="mb-0">Total Biaya Sewa:</h5>
+                                    <small class="text-muted">(1 bulan x Rp
+                                        {{ number_format($room->harga, 0, ',', '.') }})</small>
                                 </div>
+                                <div class="total-cost" id="totalCost">
+                                    Rp {{ number_format($room->harga, 0, ',', '.') }}
+                                </div>
+                                <input type="hidden" name="total_amount" value="{{ $room->harga }}">
                             </div>
                         </div>
+
 
                         <div class="d-flex justify-content-between pt-3">
                             <a href="{{ route('user.listroom') }}" class="btn btn-outline-secondary">
-                                <i class="fas fa-times me-2"></i> Batalkan Pembayaran
+                                <i class="fas fa-times me-2"></i> Kembali
                             </a>
-                            <button class="btn btn-primary">
-                                <i class="fas fa-credit-card me-2"></i> Bayar Kamar
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane me-2"></i> Booking Sekarang
                             </button>
                         </div>
                     </div>
+            </div>
+            </form>
+        </div>
+    </div>
+    </div>
+
+    <!-- Terms and Conditions Modal -->
+    <div class="modal fade" id="termsModal" tabindex="-1" aria-labelledby="termsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="termsModalLabel">Syarat dan Ketentuan</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <h6>1. Pembayaran</h6>
+                    <p>Pembayaran harus dilakukan dalam waktu 24 jam setelah pemesanan.</p>
+
+                    <h6>2. Konfirmasi Pembayaran</h6>
+                    <p>Setelah mengupload bukti pembayaran, admin akan memverifikasi dalam waktu 1x24 jam.</p>
+
+                    <h6>3. Pembatalan</h6>
+                    <p>Pembatalan dapat dilakukan maksimal 3 hari sebelum tanggal check-in.</p>
+
+                    <h6>4. Kebijakan Pengembalian</h6>
+                    <p>Tidak ada pengembalian dana setelah check-in.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Saya Mengerti</button>
                 </div>
             </div>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/id.js"></script>
     <script>
-        // Aktifkan payment option saat diklik
-        document.querySelectorAll('.payment-option').forEach(option => {
-            option.addEventListener('click', function() {
-                document.querySelectorAll('.payment-option').forEach(opt => {
-                    opt.classList.remove('active');
-                });
-                this.classList.add('active');
-                const radioId = this.querySelector('input[type="radio"]').id;
-                document.getElementById(radioId).checked = true;
-            });
+        // Initialize date pickers
+        flatpickr(".datepicker", {
+            locale: "id",
+            dateFormat: "d F Y",
+            defaultDate: "today",
+            minDate: "today"
         });
 
-        // Mencegah event bubbling dari checkbox ke parent
-        document.querySelectorAll('.payment-option input[type="checkbox"]').forEach(checkbox => {
-            checkbox.addEventListener('click', function(e) {
-                e.stopPropagation();
-            });
+        // Form submission handler
+        document.getElementById('bookingForm').addEventListener('submit', function(e) {
+            const submitButton = document.getElementById('submitButton');
+            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Memproses...';
+            submitButton.disabled = true;
+        });
+
+        // File upload validation
+        document.getElementById('payment_proof').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            const maxSize = 2 * 1024 * 1024; // 2MB
+            const validTypes = ['image/jpeg', 'image/png', 'application/pdf'];
+
+            if (file.size > maxSize) {
+                alert('Ukuran file terlalu besar. Maksimal 2MB');
+                e.target.value = '';
+            }
+
+            if (!validTypes.includes(file.type)) {
+                alert('Format file tidak didukung. Harap upload JPG, PNG, atau PDF');
+                e.target.value = '';
+            }
         });
     </script>
 </body>

@@ -22,15 +22,17 @@ Route::get('/room/{id}', [AuthController::class, 'detailRoom'])->name('user.deta
 
 Route::middleware(['auth'])->group(function() {
     Route::get('/booking', [AuthController::class, 'bookingroom'])->name('user.booking');
+    Route::get('/booking/proses',[AuthController::class, 'prosesBooking'])->name('user.booking.proses');
 });
 
 // Payment route
 Route::get('/payment', [PaymentController::class, 'createTransaction']);
+Route::post('/payment/process', [PaymentController::class, 'process'])->name('payment.process');
 
 // Admin routes
 Route::get('/admin/login', [AdminAuthController::class, 'showLoginForm'])->name('admin.login');
 Route::post('/admin/login', [AdminAuthController::class, 'login'])->name('login.admin');
-Route::get('/admin/logout', [AdminAuthController::class, 'logout'])->name('admin.logout');
+Route::post('/admin/logout', [AdminAuthController::class, 'logout'])->name('admin.logout');
 
 
 Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
