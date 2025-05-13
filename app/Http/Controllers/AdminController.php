@@ -253,19 +253,20 @@ class AdminController extends Controller
 
         DB::beginTransaction();
         try {
-
             $path = $request->file('bukti_pembayaran')->store('bukti_pembayaran', 'public');
 
-             $pemesanan = KelolaPemesanan::create([
+            $pemesanan = KelolaPemesanan::create([
                 'penghuni_id' => $validated['penghuni_id'],
                 'kamar_id' => $validated['kamar_id'],
                 'tanggal_sewa' => $validated['tanggal_sewa'],
                 'bukti_pembayaran' => $path,
-                 'status' => $validated['status'],
+                'status' => $validated['status'],
             ]);
 
-
-            KelolaKamar::where('id', $validated['kamar_id'])->update(['status' => 'booked']);
+            // Hanya update status kamar menjadi 'booked' jika status pemesanan 'Diterima'
+            if ($validated['status'] === 'Diterima') {
+                KelolaKamar::where('id', $validated['kamar_id'])->update(['status' => 'booked']);
+            }
 
             DB::commit();
             return redirect()->route('pemesanan')->with('success', 'Pemesanan berhasil disimpan.');
@@ -276,29 +277,62 @@ class AdminController extends Controller
                 Storage::disk('public')->delete($path);
             }
             return back()->withInput()
-                        ->with('error', 'Gagal menyimpan pemesanan: '.$e->getMessage());
+                        ->with('error', 'Gagal menyimpan pemesanan: ' . $e->getMessage());
         }
     }
 
-
     public function updatePemesanan(Request $request, $id)
     {
+        // Retrieve the existing 'pemesanan' or fail
         $pemesanan = KelolaPemesanan::findOrFail($id);
 
+        // Validate the incoming request data
         $validated = $request->validate([
-            'kamar_id' => 'required|exists:kelola_kamar,id',
             'penghuni_id' => 'required|exists:kelola_penghuni,id',
-            'tanggal_masuk' => 'required|date',
-            'tanggal_keluar' => 'required|date|after:tanggal_masuk',
-            'status' => 'required|in:menunggu,diterima,ditolak',
+            'kamar_id' => 'required|exists:kelola_kamar,id',
+            'tanggal_sewa' => 'required|date|after_or_equal:today',
+            'status' => 'required|in:Menunggu,Diterima,Ditolak',
+            'bukti_pembayaran' => 'nullable|mimes:jpg,jpeg,png,pdf|max:10240',  // Max size: 10MB
         ]);
 
         try {
-            $pemesanan->update($validated);
-            return redirect()->route('pemesanan.index')->with('success', 'Pemesanan berhasil diperbarui');
+            // Check if the room has been changed
+            if ($validated['kamar_id'] != $pemesanan->kamar_id) {
+                $kamarBaru = KelolaKamar::find($validated['kamar_id']);
 
+                // Check if the selected new room is booked
+                if ($kamarBaru->status === 'booked') {
+                    return back()->withInput()->with('error', 'Kamar yang dipilih sudah dipesan. Silakan pilih kamar lain.');
+                }
+
+                // Optional: If room has changed, update old room status to available
+                $kamarLama = KelolaKamar::find($pemesanan->kamar_id);
+                $kamarLama->status = 'available';
+                $kamarLama->save();
+
+                // Update new room status to booked if the status is "Diterima"
+                if ($validated['status'] === 'Diterima') {
+                    $kamarBaru->status = 'booked';
+                    $kamarBaru->save();
+                }
+            }
+
+            // Handle file upload for payment proof (optional)
+            if ($request->hasFile('bukti_pembayaran')) {
+                $file = $request->file('bukti_pembayaran');
+                $fileName = time() . '_' . $file->getClientOriginalName();
+                $file->storeAs('public/bukti_pembayaran', $fileName);  // Store in storage/app/public/bukti_pembayaran
+                $validated['bukti_pembayaran'] = $fileName;
+            }
+
+            // Update the 'pemesanan' record
+            $pemesanan->update($validated);
+
+            // Return success response
+            return redirect()->route('pemesanan.index')->with('success', 'Pesanan berhasil diperbarui');
         } catch (\Exception $e) {
-            return back()->withInput()->with('error', 'Gagal memperbarui pemesanan: '.$e->getMessage());
+            // Return error message if something goes wrong
+            return back()->withInput()->with('error', 'Gagal memperbarui pemesanan: ' . $e->getMessage());
         }
     }
 

@@ -54,7 +54,7 @@ Route::post('/admin/notifikasi/destroy/{id}', [AdminController::class, 'destroyN
 // Booking management
 Route::get('/admin/pemesanan', [AdminController::class, 'indexPemesanan'])->name('pemesanan');
 Route::post('/admin/pemesanan/store', [AdminController::class, 'storePemesanan'])->name('pemesanan.store');
-Route::post('/admin/pemesanan/update/{id}', [AdminController::class, 'updatePemesanan'])->name('pemesanan.update');
+Route::put('/admin/pemesanan/update/{id}', [AdminController::class, 'updatePemesanan'])->name('pemesanan.update');
 Route::delete('/admin/pemesanan/destroy/{id}', [AdminController::class, 'destroyPemesanan'])->name('pemesanan.destroy');
 
 // Tenant management

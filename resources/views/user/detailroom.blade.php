@@ -365,7 +365,7 @@
                         </a>
 
                         <a href="{{ auth()->check() ? route('user.booking', ['room_id' => $room->id]) : '#' }}"
-                            class="btn btn-book {{ $room->status != 'available' ? 'disabled cursor-not-allowed opacity-50' : '' }}"
+                            class="btn btn-book text-white {{ $room->status != 'available' ? 'disabled cursor-not-allowed opacity-50' : '' }}"
                             @if (!auth()->check()) data-bs-toggle="modal" data-bs-target="#loginModal" @endif>
                             <i class="fas fa-calendar-check me-2"></i> Booking Sekarang
                         </a>
